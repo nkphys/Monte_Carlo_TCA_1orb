@@ -65,6 +65,8 @@ void MFParams::FieldThrow(int site, string mc_dof_type)
 {
     int a, b;
 
+    int Pi_multiple;
+
     double Pi = Parameters_.pi;
     double MC_Window = Parameters_.WindowSize;
 
@@ -75,6 +77,10 @@ void MFParams::FieldThrow(int site, string mc_dof_type)
     if (mc_dof_type == "phi")
     {
         ephi(a, b) += 2 * Pi * (random1() - 0.5) * MC_Window;
+
+        Pi_multiple = ephi(a, b)/Pi;
+
+
         if (ephi(a, b) < 0.0)
         {
             ephi(a, b) += 2.0 * Pi;
