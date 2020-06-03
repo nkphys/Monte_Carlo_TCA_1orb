@@ -281,10 +281,10 @@ void Hamiltonian::Initialize()
 {
 
     //For Hubbard Stratonovich transformation
-    HS_factor = 1.0;
+    //HS_factor = 1.0;
 
     //else use
-    //HS_factor=0.0;
+    HS_factor=0.0;
 
     int ns = (Parameters_.lx_cluster) * (Parameters_.ly_cluster);
 

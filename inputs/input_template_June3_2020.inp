@@ -13,7 +13,7 @@ Boltzman_constant=1.0
 
 RandomDisorderSeed=4
 Disorder_Strength=0.0
-J_Hund=-24.0
+J_Hund=-6.0
 K=0.0
 
 
@@ -41,7 +41,6 @@ Read_Seed_from_file=0
 Seed_file_name=ThetaPhi_Temp5.0MicroState0.txt
 
 #4 phi theta moment_size local_density
-
 
 
 Perform_HF_SC_calculation=0
