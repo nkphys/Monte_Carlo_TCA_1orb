@@ -159,7 +159,12 @@ void MCEngine::RUN_MC()
         //cout << "Here 2" << endl;
         Hamiltonian_.Diagonalize(Parameters_.Dflag);
         n_states_occupied_zeroT = Parameters_.ns * Parameters_.Fill * 2.0;
+        if(!Parameters_.fixed_mu_value){
         initial_mu_guess = 0.5 * (Hamiltonian_.eigs_[n_states_occupied_zeroT - 1] + Hamiltonian_.eigs_[n_states_occupied_zeroT]);
+        }
+        else{
+        initial_mu_guess=Parameters_.fixed_mu_value;
+        }
         //initial_mu_guess=0.25;
         Parameters_.mus = Hamiltonian_.chemicalpotential(initial_mu_guess, Parameters_.Fill);
         Prev_QuantE = Hamiltonian_.E_QM();
