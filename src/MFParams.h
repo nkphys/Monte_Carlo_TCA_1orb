@@ -277,22 +277,31 @@ void MFParams::initialize()
                 if (Parameters_.Perform_HF_SC_calculation == false)
                 {
                     //RANDOM fields
-                    if (Parameters_.MC_on_phi == true)
+
+                    if (Parameters_.MC_on_theta_and_phi == true)
                     {
                         ephi(i, j) = 2.0 * random1() * PI;
-                    }
-                    else
-                    {
-                        ephi(i, j) = 0.0;
-                    }
-
-                    if (Parameters_.MC_on_theta == true)
-                    {
                         etheta(i, j) = random1() * PI;
                     }
                     else
                     {
-                        etheta(i, j) = 0.0;
+                        if (Parameters_.MC_on_phi == true)
+                        {
+                            ephi(i, j) = 2.0 * random1() * PI;
+                        }
+                        else
+                        {
+                            ephi(i, j) = 0.0;
+                        }
+
+                        if (Parameters_.MC_on_theta == true)
+                        {
+                            etheta(i, j) = random1() * PI;
+                        }
+                        else
+                        {
+                            etheta(i, j) = 0.0;
+                        }
                     }
 
                     if (Parameters_.MC_on_moment_size == true)

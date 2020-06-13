@@ -181,9 +181,6 @@ void MCEngine::RUN_MC()
         cout << "Initial Quantum Energy[Full System] = " << Prev_QuantE << endl;
         cout << "Initial Total Energy[Full System] = " << PrevE + Prev_QuantE << endl;
         cout << "Initial mu=" << muu_prev << endl;
-        //for(int i=0;i<10;i++){
-        //  cout<<i<<"   "<<Hamiltonian_.eigs_[i]<<endl;
-        // }
 
         int Confs_used = 0;
         int measure_start = 0;
