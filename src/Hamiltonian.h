@@ -751,7 +751,8 @@ void Hamiltonian::HTBClusterCreate()
     else{
       HTBCluster_=HTB_;
     }
-     HTBCluster_.print();
+
+    // HTBCluster_.print();
 
 } // ----------
 
