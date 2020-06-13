@@ -15,6 +15,7 @@ public:
     double k_const;
     double Disorder_Strength, RandomDisorderSeed;
     double Boltzman_constant;
+    double BoundaryConnection;
     bool Read_Seed_from_file_;
     string Seed_file_name_;
 
@@ -30,7 +31,8 @@ public:
     bool Perform_HF_SC_calculation;
     bool Simple_Mixing;
 
-    bool MC_on_theta, MC_on_phi, MC_on_moment_size, MC_on_local_density;
+
+    bool MC_on_theta, MC_on_phi, MC_on_theta_and_phi, MC_on_moment_size, MC_on_local_density;
 
     bool fix_mu;
 
@@ -63,7 +65,7 @@ void Parameters::Initialize(string inputfile_)
 {
 
     maxmoment = 10.0;
-    t_hopping = 1.0;
+    t_hopping = -1.0;
     string monte_carlo_variables_;
     double cooling_double;
     double Read_Seed_from_file_double;
@@ -86,6 +88,7 @@ void Parameters::Initialize(string inputfile_)
     assert(no_of_MC_vars < 5);
     MC_on_theta = false;
     MC_on_phi = false;
+    MC_on_theta_and_phi =false;
     MC_on_moment_size = false;
     MC_on_local_density = false;
     MC_DOF.resize(no_of_MC_vars);
@@ -103,6 +106,10 @@ void Parameters::Initialize(string inputfile_)
         {
             MC_on_theta = true;
         }
+        else if (temp_string == "theta_and_phi")
+        {
+            MC_on_theta_and_phi = true;
+        }
         else if (temp_string == "moment_size")
         {
             MC_on_moment_size = true;
@@ -113,7 +120,7 @@ void Parameters::Initialize(string inputfile_)
         }
         else
         {
-            cout << "MC cannot be performed on " << temp_string << ", please choose only from phi theta moment_size local_density" << endl;
+            cout << "MC cannot be performed on " << temp_string << ", please choose only from phi theta theta_and_phi moment_size local_density" << endl;
             assert(false);
         }
     }
@@ -129,6 +136,7 @@ void Parameters::Initialize(string inputfile_)
     SavingMicroscopicStates_int = int(matchstring(inputfile_, "SavingMicroscopicStates"));
     fix_mu = matchstring(inputfile_, "Fix_mu");
     fixed_mu_value = double(matchstring(inputfile_, "fixed_mu_value")) * 1.0;
+    BoundaryConnection = double(matchstring(inputfile_, "PBC"));
 
     assert(SavingMicroscopicStates_int == 1 ||
            SavingMicroscopicStates_int == 0);

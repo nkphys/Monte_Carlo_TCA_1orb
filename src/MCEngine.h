@@ -51,6 +51,7 @@ void MCEngine::RUN_MC()
     int Gap_bw_sweeps = Parameters_.Measurement_after_each_m_sweeps;
 
     double PrevE, CurrE, P_new, P12, muu_prev;
+    double Prob_check;
     double muu_prevCluster;
     double Curr_QuantE;
     double Prev_QuantE;
@@ -200,6 +201,7 @@ void MCEngine::RUN_MC()
                 for (int mc_dof = 0; mc_dof < Parameters_.MC_DOF.size(); mc_dof++)
                 {
 
+
                     //***Before change*************//
 
                     if (ED_ == false)
@@ -253,15 +255,11 @@ void MCEngine::RUN_MC()
                     }
 
                     Hamiltonian_.InteractionsClusterCreate(i);
-                    // Hamiltonian_.HamCluster_.print();
-                    // cout << "Here 3" << endl;
-                    // Hamiltonian_.Check_Hermiticity();
-                    // cout << "Here 4" << endl;
 
                     Hamiltonian_.DiagonalizeCluster(Parameters_.Dflag);
 
                     Parameters_.mus_Cluster = Hamiltonian_.chemicalpotentialCluster(muu_prevCluster, Parameters_.Fill);
-                    //
+
                     Curr_QuantECluster = Hamiltonian_.E_QMCluster();
 
                     //Ratio of Quantum partition functions
@@ -273,47 +271,35 @@ void MCEngine::RUN_MC()
                   */
 
                     //same mu-refrence is used, otherwise engine does not work properly
-                    P_new = ProbCluster(Parameters_.mus_Cluster, Parameters_.mus_Cluster);
+                    P_new = ProbCluster(muu_prevCluster*1.0, muu_prevCluster*1.0);
                     P12 = P_new - Parameters_.beta * ((CurrE) - (PrevE));
                     //P12 = - Parameters_.beta*((CurrE)-(PrevE));
                     //cout<<P12<<endl;
                     P12 += log((sin(MFParams_.etheta(x, y)) / sin(saved_Params[0])));
 
-                    //---OR---
-                    //P12 = exp(-Parameters_.beta*((CurrE+Curr_QuantE)-(PrevE+Prev_QuantE)));
-                    //P12*= (sin(MFParams_.etheta(x,y))/sin(saved_Params[0]));
+
 
                     //Heat bath algorithm [See page-129 of Prof. Elbio's Book]
-                    //Heat bath algorithm works for small changes i.e. when P12~1.0
+                    //Heat bath algorithm works for small changes i.e. when P~1.0
                     //  if (Heat_Bath_Algo){
-                    //     P12 =P12/(1.0+P12);
+                    //     P =P/(1.0+P);
                     //  }
+                    //Prob_check = exp(P12)/(1.0+exp(P12));
 
                     //Metropolis Algotithm
                     // if (Metropolis_Algo){
-                    //    P12=min(1.0,P12);
+                    //    P=min(1.0,P);
                     // }
+                    Prob_check = min(1.0,exp(P12));
 
                     /*
        * VON NEUMANN's REJECTING METHOD:
-       * Random number < P12 -----> ACCEPT
-       * Random number > P12 -----> REJECT
+       * Random number < P -----> ACCEPT
+       * Random number > P -----> REJECT
        */
 
                     //ACCEPTED
-                    if (P12 > 0)
-                    {
-                        Parameters_.AccCount[0]++;
-                        act = 1;
-                        if (ED_)
-                        {
-                            PrevE = CurrE;
-                            Prev_QuantECluster = Curr_QuantECluster;
-                            Hamiltonian_.copy_eigs_Cluster(1);
-                            muu_prevCluster = Parameters_.mus_Cluster;
-                        }
-                    }
-                    else if (exp(P12) > (1.0 - MFParams_.random1()))
+                    if (Prob_check > ( MFParams_.random1()) )
                     {
                         Parameters_.AccCount[0]++;
                         act = 1;
@@ -388,7 +374,7 @@ void MCEngine::RUN_MC()
                 else
                 {
                     assert(ED_);
-                    Parameters_.mus = muu_prevCluster;
+                    Parameters_.mus = Parameters_.mus_Cluster;
                     Hamiltonian_.eigs_ = Hamiltonian_.eigsCluster_;
                     Hamiltonian_.Ham_ = Hamiltonian_.HamCluster_;
                 }
@@ -668,7 +654,7 @@ double MCEngine::ProbCluster(double muu, double mu_new)
         Y = Parameters_.beta * ((muu)-Hamiltonian_.eigsCluster_saved_[i]);
         //P += log(1 + exp(X)) - log(1 + exp(Y));
 
-        if (X > 5)
+        if (X > 15)
         {
             P += X;
         }
@@ -676,7 +662,7 @@ double MCEngine::ProbCluster(double muu, double mu_new)
         {
             P += log(2.0 + X);
         }
-        else if (X < -5)
+        else if (X < -15)
         {
             P += exp(X);
         }
@@ -685,7 +671,7 @@ double MCEngine::ProbCluster(double muu, double mu_new)
             P += log(1.0 + exp(X));
         }
 
-        if (Y > 5)
+        if (Y > 15)
         {
             P -= Y;
         }
@@ -693,7 +679,7 @@ double MCEngine::ProbCluster(double muu, double mu_new)
         {
             P -= log(2.0 + Y);
         }
-        else if (Y < -5)
+        else if (Y < -15)
         {
             P -= exp(Y);
         }

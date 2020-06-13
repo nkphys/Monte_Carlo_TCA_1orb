@@ -56,7 +56,7 @@ void MFParams::Adjust_MCWindow()
     Parameters_.AccCount[0] = 0;
     Parameters_.AccCount[1] = 0;
     Parameters_.WindowSize *= abs(1.0 + 1.0 * (ratio - 0.5));
-    //Parameters_.WindowSize =1.0;
+    //Parameters_.WindowSize =0.2;
     cout << "Ratio: " << ratio << "  window size:  " << Parameters_.WindowSize << endl;
     return;
 } // ----------
@@ -93,6 +93,40 @@ void MFParams::FieldThrow(int site, string mc_dof_type)
 
     if (mc_dof_type == "theta")
     {
+        etheta(a, b) += Pi * (random1() - 0.5) * MC_Window;
+        if (etheta(a, b) < 0.0)
+        {
+            etheta(a, b) = -etheta(a, b);
+            ephi(a, b) = fmod(ephi(a, b) + Pi, 2.0 * Pi);
+        }
+
+        if (etheta(a, b) > Pi)
+        {
+            etheta(a, b) -= 2.0 * Pi;
+            ephi(a, b) = fmod(ephi(a, b) + Pi, 2.0 * Pi);
+        }
+    }
+
+
+    if (mc_dof_type == "theta_and_phi")
+    {
+        //phi
+        ephi(a, b) += 2 * Pi * (random1() - 0.5) * MC_Window;
+
+        Pi_multiple = ephi(a, b)/Pi;
+
+
+        if (ephi(a, b) < 0.0)
+        {
+            ephi(a, b) += 2.0 * Pi;
+        }
+        if (ephi(a, b) >= 2.0 * Pi)
+        {
+            ephi(a, b) -= 2.0 * Pi;
+        }
+
+
+        //theta
         etheta(a, b) += Pi * (random1() - 0.5) * MC_Window;
         if (etheta(a, b) < 0.0)
         {

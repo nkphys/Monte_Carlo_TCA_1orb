@@ -90,7 +90,7 @@ double Hamiltonian::chemicalpotential(double muin, double filling)
                     n1 += double(1.0 / (exp((eigs_[j] - mu_out) * Parameters_.beta) + 1.0));
                 }
                 //cout <<"i  "<< i << "  n1  " << n1 << "  mu  " << mu_out<< endl;
-                if (abs(N - n1) < double(0.0001))
+                if (abs(N - n1) < double(0.00001))
                 {
                     //cout<<abs(N-n1)<<endl;
                     converged = true;
@@ -120,7 +120,7 @@ double Hamiltonian::chemicalpotential(double muin, double filling)
         {
             mu1 = eigs_[0];
             mu2 = eigs_[nstate - 1];
-            for (int i = 0; i < 40000; i++)
+            for (int i = 0; i < 4000000; i++)
             {
                 n1 = 0.0;
                 for (int j = 0; j < nstate; j++)
@@ -128,7 +128,7 @@ double Hamiltonian::chemicalpotential(double muin, double filling)
                     n1 += double(1.0 / (exp((eigs_[j] - mu_temp) * Parameters_.beta) + 1.0));
                 }
                 //cout <<"i  "<< i << "  n1  " << n1 << "  mu  " << mu_out<< endl;
-                if (abs(N - n1) < double(0.0001))
+                if (abs(N - n1) < double(0.00001))
                 {
                     //cout<<abs(N-n1)<<endl;
                     converged = true;
@@ -196,7 +196,7 @@ double Hamiltonian::chemicalpotentialCluster(double muin, double filling)
                     n1 += double(1.0 / (exp((eigsCluster_[j] - mu_out) * Parameters_.beta) + 1.0));
                 }
                 //cout <<"i  "<< i << "  n1  " << n1 << "  mu  " << mu_out<< endl;
-                if (abs(N - n1) < double(0.0001))
+                if (abs(N - n1) < double(0.00001))
                 {
                     //cout<<abs(N-n1)<<endl;
                     converged = true;
@@ -226,7 +226,7 @@ double Hamiltonian::chemicalpotentialCluster(double muin, double filling)
         {
             mu1 = eigsCluster_[0];
             mu2 = eigsCluster_[nstate - 1];
-            for (int i = 0; i < 40000; i++)
+            for (int i = 0; i < 4000000; i++)
             {
                 n1 = 0.0;
                 for (int j = 0; j < nstate; j++)
@@ -234,7 +234,7 @@ double Hamiltonian::chemicalpotentialCluster(double muin, double filling)
                     n1 += double(1.0 / (exp((eigsCluster_[j] - mu_temp) * Parameters_.beta) + 1.0));
                 }
                 //cout <<"i  "<< i << "  n1  " << n1 << "  mu  " << mu_out<< endl;
-                if (abs(N - n1) < double(0.0001))
+                if (abs(N - n1) < double(0.00001))
                 {
                     //cout<<abs(N-n1)<<endl;
                     converged = true;
@@ -478,8 +478,8 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site)
         ai = MFParams_.ephi(x_pos, y_pos);
         den = MFParams_.Local_density(x_pos, y_pos);
 
-        HamCluster_(i, i) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) - Parameters_.fix_mu * fix_mu_double;
-        HamCluster_(i + ns, i + ns) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) - Parameters_.fix_mu * fix_mu_double;
+        HamCluster_(i, i) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
+        HamCluster_(i + ns, i + ns) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
         HamCluster_(i, i) += Parameters_.J_Hund * (cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
         HamCluster_(i + ns, i + ns) += Parameters_.J_Hund * (-cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
         HamCluster_(i, i + ns) += Parameters_.J_Hund * sin(ei) * complex<double>(cos(ai), -sin(ai)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos); //S-
@@ -628,7 +628,7 @@ void Hamiltonian::HTBCreate()
         // * +x direction Neighbor
         if (Coordinates_.indx(l) == (Coordinates_.lx_ - 1))
         {
-            phasex = exp(iota_complex * 2.0 * (1.0 * mx) * PI / (1.0 * Parameters_.TBC_cellsX));
+            phasex = Parameters_.BoundaryConnection*exp(iota_complex * 2.0 * (1.0 * mx) * PI / (1.0 * Parameters_.TBC_cellsX));
             phasey = one_complex;
         }
         else
@@ -654,7 +654,7 @@ void Hamiltonian::HTBCreate()
         if (Coordinates_.indy(l) == (Coordinates_.ly_ - 1))
         {
             phasex = one_complex;
-            phasey = exp(iota_complex * 2.0 * (1.0 * my) * PI / (1.0 * Parameters_.TBC_cellsY));
+            phasey = Parameters_.BoundaryConnection*exp(iota_complex * 2.0 * (1.0 * my) * PI / (1.0 * Parameters_.TBC_cellsY));
         }
         else
         {
@@ -683,6 +683,7 @@ void Hamiltonian::HTBCreate()
 void Hamiltonian::HTBClusterCreate()
 {
 
+    if(Parameters_.ED_==false){
     int ns = (Parameters_.lx_cluster) * (Parameters_.ly_cluster);
 
     complex<double> phasex, phasey;
@@ -745,7 +746,12 @@ void Hamiltonian::HTBClusterCreate()
             }
         }
     }
-    // HTBCluster_.print();
+
+    }
+    else{
+      HTBCluster_=HTB_;
+    }
+     HTBCluster_.print();
 
 } // ----------
 
