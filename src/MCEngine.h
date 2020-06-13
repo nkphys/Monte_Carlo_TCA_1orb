@@ -154,10 +154,17 @@ void MCEngine::RUN_MC()
 
         PrevE = Hamiltonian_.GetCLEnergy();
         Hamiltonian_.InteractionsCreate();
+//        Hamiltonian_.Ham_.print();
         //cout << "Here 1"<<endl;
         // Hamiltonian_.Check_Hermiticity();
         //cout << "Here 2" << endl;
         Hamiltonian_.Diagonalize(Parameters_.Dflag);
+
+//        for(int n=0;n<2*Parameters_.ns;n++){
+//            cout<<n<<"  "<<Hamiltonian_.eigs_[n]<<endl;
+//        }
+//        assert(false);
+
         n_states_occupied_zeroT = Parameters_.ns * Parameters_.Fill * 2.0;
         if(!Parameters_.fixed_mu_value){
         initial_mu_guess = 0.5 * (Hamiltonian_.eigs_[n_states_occupied_zeroT - 1] + Hamiltonian_.eigs_[n_states_occupied_zeroT]);

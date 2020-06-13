@@ -439,7 +439,7 @@ void Hamiltonian::InteractionsCreate()
         for (int spin = 0; spin < 2; spin++)
         {
             a = i + ns_ * spin;
-            Ham_(a, a) = complex<double>(1.0, 0.0) * MFParams_.Disorder(Coordinates_.indx(i), Coordinates_.indy(i));
+            Ham_(a, a) += complex<double>(1.0, 0.0) * MFParams_.Disorder(Coordinates_.indx(i), Coordinates_.indy(i));
         }
     }
 
@@ -488,7 +488,7 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site)
         for (int spin = 0; spin < 2; spin++)
         {
             a = i + ns * spin;
-            HamCluster_(a, a) = complex<double>(1.0, 0.0) * MFParams_.Disorder(x_pos, y_pos);
+            HamCluster_(a, a) += complex<double>(1.0, 0.0) * MFParams_.Disorder(x_pos, y_pos);
         }
     }
 
