@@ -406,6 +406,22 @@ void MCEngine::RUN_MC()
                 if (zero_or_not == 0)
                 {
 
+                    Observables_.SiSjFULL();
+                    Observables_.SiSjQ_Average();
+                    Observables_.SiSj_Average();
+                    Observables_.calculate_quantum_SiSj();
+                    Observables_.quantum_SiSjQ_Average();
+                    Observables_.quantum_SiSj_Average();
+                    Observables_.calculate_local_density();
+                    Observables_.local_density_average();
+
+                    //Just Classical Energy
+                    Observables_.Total_Energy_Average(0.0, CurrE);
+                    MFParams_.Calculate_Fields_Avg();
+
+
+                    int temp_site_;
+
                     if ((Parameters_.Saving_Microscopic_States == true) &&
                             (Confs_used < Parameters_.No_Of_Microscopic_States))
                     {
@@ -426,24 +442,33 @@ void MCEngine::RUN_MC()
                                                               << setw(15) << MFParams_.Moment_Size(ix, iy) << setw(15) << MFParams_.Local_density(ix, iy) << endl;
                             }
                         }
+
+
+                        string File_Out_local_den_microState = "Local_den_Temp" + string(temp_char) +
+                                "MicroState" + string(Confs_char) + ".txt";
+                        ofstream File_Out_local_den_MicroState(File_Out_local_den_microState.c_str());
+
+                        File_Out_local_den_MicroState << "#x" << setw(15) << "y" << setw(15)<< "<n_up>" << setw(15)<< "<n_dn>"<<endl;
+
+                        for (int ix = 0; ix < lx_+1; ix++)
+                        {
+                            for (int iy = 0; iy < ly_+1; iy++)
+                            {
+                                temp_site_ = Coordinates_.Nc(ix%lx_, iy%ly_);
+                                File_Out_local_den_MicroState << ix << setw(15) << iy << setw(15) << Observables_.local_density[temp_site_][0]<<setw(15)
+                                                              << Observables_.local_density[temp_site_][1] << endl;
+                            }
+                            File_Out_local_den_MicroState<<endl;
+                        }
+
+
                     }
 
                     Confs_used = Confs_used + 1;
-                    Observables_.SiSjFULL();
-                    Observables_.SiSjQ_Average();
-                    Observables_.SiSj_Average();
-                    Observables_.calculate_quantum_SiSj();
-                    Observables_.quantum_SiSjQ_Average();
-                    Observables_.quantum_SiSj_Average();
-                    Observables_.calculate_local_density();
-                    Observables_.local_density_average();
-                    //Just Classical Energy
-                    Observables_.Total_Energy_Average(0.0, CurrE);
 
-                    MFParams_.Calculate_Fields_Avg();
 
                     double avg_filling = 0.0;
-                    int temp_site_;
+
                     for (int ix = 0; ix < lx_; ix++)
                     {
                         for (int iy = 0; iy < ly_; iy++)
