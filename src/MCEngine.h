@@ -58,7 +58,7 @@ void MCEngine::RUN_MC()
     double Curr_QuantECluster;
     double Prev_QuantECluster;
     int x, y, act;
-    double saved_Params[4];
+    double saved_Params[6];
 
     string File_Out_progress;
     string File_Out_theta_phi;
@@ -243,6 +243,8 @@ void MCEngine::RUN_MC()
                     saved_Params[1] = MFParams_.ephi(x, y);
                     saved_Params[2] = MFParams_.Moment_Size(x, y);
                     saved_Params[3] = MFParams_.Local_density(x, y);
+                    saved_Params[4] = MFParams_.u_pX(x,y);
+                    saved_Params[5] = MFParams_.u_pY(x,y);
 
                     MFParams_.FieldThrow(i, Parameters_.MC_DOF[mc_dof]);
                     CurrE = Hamiltonian_.GetCLEnergy();
@@ -330,6 +332,8 @@ void MCEngine::RUN_MC()
                         MFParams_.ephi(x, y) = saved_Params[1];
                         MFParams_.Moment_Size(x, y) = saved_Params[2];
                         MFParams_.Local_density(x, y) = saved_Params[3];
+                        MFParams_.u_pX(x,y) = saved_Params[4];
+                        MFParams_.u_pY(x,y) = saved_Params[5];
                     }
 
                     // if ((act == 1) && (count<1000)) {
@@ -519,15 +523,18 @@ void MCEngine::RUN_MC()
             }
         }
 
-        File_Out_Local_Density << "ix" << setw(15) << "iy" << setw(15) << "site" << setw(15) << "<n_u(site)>" << setw(15) << "sd(n_u(set))" << setw(15) << "<n_u(site)>" << setw(15) << "std.dev(n_u(set))" << endl;
+        File_Out_Local_Density << "ix" << setw(15) << "iy" << setw(15) << "site" << setw(15) << "<n_u(site)>" << setw(15) << "sd(n_u(site))" << setw(15) << "<n_d(site)>" << setw(15) << "std.dev(n_d(site))" << endl;
         int temp_site_;
-        for (int ix = 0; ix < lx_; ix++)
+        for (int ix = 0; ix < lx_+1; ix++)
         {
-            for (int iy = 0; iy < ly_; iy++)
+            for (int iy = 0; iy < ly_+1; iy++)
             {
-                temp_site_ = Coordinates_.Nc(ix, iy);
+
+                temp_site_ = Coordinates_.Nc( ix%lx_ , iy%ly_ );
+
                 File_Out_Local_Density << ix << setw(15) << iy << setw(15) << temp_site_ << setw(15) << Observables_.local_density_Mean[temp_site_][0] / (Confs_used * 1.0) << setw(15) << sqrt(((Observables_.local_density_square_Mean[temp_site_][0] / (Confs_used * 1.0)) - ((Observables_.local_density_Mean[temp_site_][0] * Observables_.local_density_Mean[temp_site_][0]) / (Confs_used * Confs_used * 1.0))))
                         << setw(15) << Observables_.local_density_Mean[temp_site_][1] / (Confs_used * 1.0) << setw(15) << sqrt(((Observables_.local_density_square_Mean[temp_site_][1] / (Confs_used * 1.0)) - ((Observables_.local_density_Mean[temp_site_][1] * Observables_.local_density_Mean[temp_site_][1]) / (Confs_used * Confs_used * 1.0)))) << endl;
+
             }
             File_Out_Local_Density << endl;
         }

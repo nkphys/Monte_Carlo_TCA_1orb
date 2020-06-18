@@ -54,7 +54,7 @@ int Coordinates::Nc(int x, int y){
 
 
 int Coordinates::neigh(int site, int wneigh){
-    if(site>ns_-1 || wneigh>=3){perror("Coordinates.h:getneigh -> ifstatement-1");}
+    if(site>ns_-1 || wneigh>=4){perror("Coordinates.h:getneigh -> ifstatement-1");}
     return neigh_(site,wneigh);
 } // ----------
 

@@ -12,12 +12,14 @@ public:
     int lx_cluster, ly_cluster;
     double mus, mus_Cluster, Fill, pi;
     double J_Hund, K1x, K1y;
+    double lambda_lattice;
     double k_const;
     double Disorder_Strength, RandomDisorderSeed;
     double Boltzman_constant;
     double BoundaryConnection;
     bool Read_Seed_from_file_;
     string Seed_file_name_;
+//    bool J_Hund_InfinityLimit;
 
     double t_hopping;
 
@@ -32,7 +34,7 @@ public:
     bool Simple_Mixing;
 
 
-    bool MC_on_theta, MC_on_phi, MC_on_theta_and_phi, MC_on_moment_size, MC_on_local_density;
+    bool MC_on_theta, MC_on_phi, MC_on_theta_and_phi, MC_on_theta_and_phi_and_u, MC_on_moment_size, MC_on_local_density;
 
     bool fix_mu;
 
@@ -66,6 +68,7 @@ void Parameters::Initialize(string inputfile_)
 
     maxmoment = 10.0;
     t_hopping = -1.0;
+    int J_Hund_InfinityLimit_int;
     string monte_carlo_variables_;
     double cooling_double;
     double Read_Seed_from_file_double;
@@ -85,7 +88,7 @@ void Parameters::Initialize(string inputfile_)
     stringstream monte_carlo_variables_stream(monte_carlo_variables_);
     int no_of_MC_vars;
     monte_carlo_variables_stream >> no_of_MC_vars;
-    assert(no_of_MC_vars < 5);
+    assert(no_of_MC_vars < 6);
     MC_on_theta = false;
     MC_on_phi = false;
     MC_on_theta_and_phi =false;
@@ -110,6 +113,10 @@ void Parameters::Initialize(string inputfile_)
         {
             MC_on_theta_and_phi = true;
         }
+        else if (temp_string == "theta_and_phi_and_u")
+        {
+            MC_on_theta_and_phi_and_u = true;
+        }
         else if (temp_string == "moment_size")
         {
             MC_on_moment_size = true;
@@ -120,13 +127,21 @@ void Parameters::Initialize(string inputfile_)
         }
         else
         {
-            cout << "MC cannot be performed on " << temp_string << ", please choose only from phi theta theta_and_phi moment_size local_density" << endl;
+            cout << "MC cannot be performed on " << temp_string << ", please choose only from phi theta theta_and_phi theta_and_phi_and_u moment_size local_density" << endl;
             assert(false);
         }
     }
 
     lx = int(matchstring(inputfile_, "Xsite"));
     ly = int(matchstring(inputfile_, "Ysite"));
+//    J_Hund_InfinityLimit_int = int (matchstring(inputfile_, "J_Hund_InfinityLimit"));
+//    if(J_Hund_InfinityLimit_int==1){
+//        J_Hund_InfinityLimit=true;
+//    }
+//    else{
+//        J_Hund_InfinityLimit=false;
+//    }
+
     TBC_mx = int(matchstring(inputfile_, "TwistedBoundaryCond_mx"));
     TBC_my = int(matchstring(inputfile_, "TwistedBoundaryCond_my"));
     TBC_cellsX = int(matchstring(inputfile_, "TBC_cellsX"));
@@ -164,6 +179,7 @@ void Parameters::Initialize(string inputfile_)
     Disorder_Strength = matchstring(inputfile_, "Disorder_Strength");
     Boltzman_constant = matchstring(inputfile_, "Boltzman_constant");
     J_Hund = matchstring(inputfile_, "J_Hund");
+    lambda_lattice = matchstring (inputfile_, "lambda_lattice");
     K1x = matchstring(inputfile_, "K");
     K1y = K1x;
     cout << "K1x= " << K1x << endl;

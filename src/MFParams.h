@@ -14,6 +14,7 @@ class MFParams
 public:
     // Define Fields
     Matrix<double> etheta, ephi;
+    Matrix<double> u_pX, u_pY;
     Matrix<double> Sz, Sx, Sy;
     Matrix<double> etheta_avg, ephi_avg;
     Matrix<double> Moment_Size;
@@ -132,6 +133,38 @@ void MFParams::FieldThrow(int site, string mc_dof_type)
         etheta(a, b) = fmod(etheta(a, b),  Pi);
     }
 
+
+    if (mc_dof_type == "theta_and_phi_and_u")
+    {
+        //phi
+        ephi(a, b) += 2 * Pi * (random1() - 0.5) * MC_Window;
+
+        Pi_multiple = ephi(a, b)/Pi;
+
+        if (ephi(a, b) < 0.0)
+        {
+            ephi(a, b) = -ephi(a, b);
+        }
+
+        ephi(a, b) = fmod(ephi(a, b), 2.0 * Pi);
+
+
+        //theta
+        etheta(a, b) += Pi * (random1() - 0.5) * MC_Window;
+        if (etheta(a, b) < 0.0)
+        {
+            etheta(a, b) = -etheta(a, b);
+        }
+
+        etheta(a, b) = fmod(etheta(a, b),  Pi);
+
+
+        //u's
+        u_pX(a, b) += (random1() - 0.5) * MC_Window;
+        u_pY(a, b) += (random1() - 0.5) * MC_Window;
+    }
+
+
     //Moment Size
     if (mc_dof_type == "moment_size")
     {
@@ -178,6 +211,8 @@ void MFParams::initialize()
 
     etheta.resize(lx_, ly_);
     ephi.resize(lx_, ly_);
+    u_pX.resize(lx_,ly_);
+    u_pY.resize(lx_,ly_);
     Moment_Size.resize(lx_, ly_);
     Local_density.resize(lx_, ly_);
 
@@ -196,13 +231,13 @@ void MFParams::initialize()
     {
 
         Initial_MC_DOF_file << "#seed=" << Parameters_.RandomSeed << " for mt19937_64 Generator is used" << endl;
-        Initial_MC_DOF_file << "#ix   iy   Theta(x,y)    Phi(x,y)       Moment_Size(x,y)      Local_density(x,y)" << endl;
+        Initial_MC_DOF_file << "#ix   iy   Theta(x,y)    Phi(x,y)       Moment_Size(x,y)      Local_density(x,y)    u_pX(x,y)   u_pY(x,y)" << endl;
     }
     else if (Parameters_.Perform_HF_SC_calculation == true)
     {
 
         Initial_HF_OrderParameters_file << "#seed=" << Parameters_.RandomSeed << " for mt19937_64 Generator is used" << endl;
-        Initial_HF_OrderParameters_file << "#ix   iy   Sz(x,y)    Sx(x,y)   Sy(x,y)   Local_density(x,y)" << endl;
+        Initial_HF_OrderParameters_file << "#ix   iy   Sz(x,y)    Sx(x,y)   Sy(x,y)   Local_density(x,y)   u_pX(x,y)   u_pY(x,y)" << endl;
     }
 
     // File_Out_Theta_Phi_MicroState << "#x" << setw(15) << "y" << setw(15) << "Theta(x,y)" << setw(15) << "Phi(x,y)"
@@ -235,7 +270,7 @@ void MFParams::initialize()
             {
                 // cout << "ix_=" << ix_ << " ix=" << ix << endl;
                 // cout << "iy_=" << iy_ << " iy=" << iy << endl;
-                Initial_Seed >> ix_ >> iy_ >> etheta(ix, iy) >> ephi(ix, iy) >> Moment_Size(ix, iy) >> Local_density(ix, iy);
+                Initial_Seed >> ix_ >> iy_ >> etheta(ix, iy) >> ephi(ix, iy) >> Moment_Size(ix, iy) >> Local_density(ix, iy) >> u_pX(ix,iy) >> u_pY(ix,iy);
                 assert(ix_ == ix);
                 assert(iy_ == iy);
                 // << ix << setw(15) << iy << setw(15) << MFParams_.etheta(ix, iy) << setw(15) << MFParams_.ephi(ix, iy)
@@ -269,10 +304,20 @@ void MFParams::initialize()
                 {
                     //RANDOM fields
 
-                    if (Parameters_.MC_on_theta_and_phi == true)
+                    if (Parameters_.MC_on_theta_and_phi_and_u == true)
                     {
                         ephi(i, j) = 2.0 * random1() * PI;
                         etheta(i, j) = random1() * PI;
+                        u_pX(i,j) = ((2.0 * random1()) - 1.0)*0.5;
+                        u_pY(i,j) = ((2.0 * random1()) - 1.0)*0.5;
+
+                    }
+                    else if (Parameters_.MC_on_theta_and_phi == true)
+                    {
+                        ephi(i, j) = 2.0 * random1() * PI;
+                        etheta(i, j) = random1() * PI;
+                        u_pX(i,j)=0.0;
+                        u_pX(i,j)=0.0;
                     }
                     else
                     {
@@ -293,6 +338,9 @@ void MFParams::initialize()
                         {
                             etheta(i, j) = 0.0;
                         }
+
+                        u_pX(i,j)=0.0;
+                        u_pY(i,j)=0.0;
                     }
 
                     if (Parameters_.MC_on_moment_size == true)
@@ -321,17 +369,19 @@ void MFParams::initialize()
                     Sx(i, j) = random1();
                     Sy(i, j) = random1();
                     Local_density(i, j) = random1();
+                    u_pX(i,j) = ((2.0 * random1()) - 1.0)*0.5;
+                    u_pY(i,j) = ((2.0 * random1()) - 1.0)*0.5;
                 }
 
                 if (Parameters_.Perform_HF_SC_calculation == false)
                 {
                     Initial_MC_DOF_file << i << setw(15) << j << setw(15) << etheta(i, j) << setw(15) << ephi(i, j)
-                                        << setw(15) << Moment_Size(i, j) << setw(15) << Local_density(i, j) << endl;
+                                        << setw(15) << Moment_Size(i, j) << setw(15) << Local_density(i, j) << setw(15) << u_pX(i,j) << setw(15) << u_pY(i,j) << endl;
                 }
                 else if (Parameters_.Perform_HF_SC_calculation == true)
                 {
                     Initial_HF_OrderParameters_file << i << setw(15) << j << setw(15) << Sz(i, j) << setw(15) << Sx(i, j)
-                                                    << setw(15) << Sy(i, j) << setw(15) << Local_density(i, j) << endl;
+                                                    << setw(15) << Sy(i, j) << setw(15) << Local_density(i, j) << setw(15) << u_pX(i,j) << setw(15) << u_pY(i,j) << endl;
                 }
             }
 

@@ -374,6 +374,7 @@ double Hamiltonian::GetCLEnergy()
     // Classical Energy
     EClassical = double(0.0);
 
+    if(HS_factor!=0.0){
     for (int ix = 0; ix < lx_; ix++)
     {
         for (int iy = 0; iy < ly_; iy++)
@@ -382,13 +383,21 @@ double Hamiltonian::GetCLEnergy()
             EClassical += HS_factor * (-0.5) * Parameters_.J_Hund * ((MFParams_.Moment_Size(ix, iy) * MFParams_.Moment_Size(ix, iy)) - (0.25 * MFParams_.Local_density(ix, iy) * MFParams_.Local_density(ix, iy)));
         }
     }
+    }
 
+
+    int _ix, _iy;
     for (int i = 0; i < ns_; i++)
     {
+        _ix = Coordinates_.indx(i);
+        _iy = Coordinates_.indy(i);
+
         site = Coordinates_.neigh(i, 0); //+x
         EClassical += 1.0 * Parameters_.K1x * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
         site = Coordinates_.neigh(i, 2); //+y
         EClassical += Parameters_.K1y * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
+
+        EClassical += (-1.0)*Parameters_.t_hopping * ( pow(MFParams_.u_pX(_ix,_iy)  ,2.0) + pow(MFParams_.u_pY(_ix,_iy)  ,2.0) );
     }
 
     return EClassical;
@@ -405,9 +414,14 @@ void Hamiltonian::InteractionsCreate()
     K=0;
      */
 
+    enum {PX=0,MX,PY,MY};
+
     int space = 2 * ns_;
     int a;
     double ei, ai;
+    double upx, umx, upy, umy;
+    int i_mx, i_my;
+
     double den;
     double fix_mu_double;
     if (Parameters_.fix_mu)
@@ -424,12 +438,28 @@ void Hamiltonian::InteractionsCreate()
 
     for (int i = 0; i < ns_; i++)
     { // For each site
+
+        i_mx = Coordinates_.neigh(i, MX);
+        i_my = Coordinates_.neigh(i, MY);
+        upx = MFParams_.u_pX( Coordinates_.indx(i), Coordinates_.indy(i) );
+        umx = MFParams_.u_pX( Coordinates_.indx(i_mx), Coordinates_.indy(i_mx) );
+        upy = MFParams_.u_pY( Coordinates_.indx(i), Coordinates_.indy(i) );
+        umy = MFParams_.u_pY( Coordinates_.indx(i_my), Coordinates_.indy(i_my) );
+
         ei = MFParams_.etheta(Coordinates_.indx(i), Coordinates_.indy(i));
         ai = MFParams_.ephi(Coordinates_.indx(i), Coordinates_.indy(i));
         den = MFParams_.Local_density(Coordinates_.indx(i), Coordinates_.indy(i));
 
+
+
         Ham_(i, i) += HS_factor * (-0.25) * Parameters_.J_Hund * (den);
         Ham_(i + ns_, i + ns_) += HS_factor * (-0.25) * Parameters_.J_Hund * (den);
+
+        Ham_(i, i) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*
+                        (umx-upx  +  umy-upy);
+        Ham_(i + ns_, i + ns_) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*
+                        (umx-upx  +  umy-upy);
+
         Ham_(i, i) += Parameters_.J_Hund * (cos(ei)) * 0.5 * MFParams_.Moment_Size(Coordinates_.indx(i), Coordinates_.indy(i));
         Ham_(i + ns_, i + ns_) += Parameters_.J_Hund * (-cos(ei)) * 0.5 * MFParams_.Moment_Size(Coordinates_.indx(i), Coordinates_.indy(i));
         Ham_(i, i + ns_) += Parameters_.J_Hund * sin(ei) * complex<double>(cos(ai), -sin(ai)) * 0.5 * MFParams_.Moment_Size(Coordinates_.indx(i), Coordinates_.indy(i)); //S-
@@ -450,10 +480,14 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site)
 
     int ns = (Parameters_.lx_cluster) * (Parameters_.ly_cluster);
 
+    enum {PX=0,MX,PY,MY};
     int space = 2 * ns;
     int x_pos, y_pos;
     double ei, ai, den;
     int a;
+    int i_original;
+    int i_mx, i_my;
+    double upx, umx, upy, umy;
 
     double fix_mu_double;
     if (Parameters_.fix_mu)
@@ -474,12 +508,26 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site)
         x_pos = (x_pos + Coordinates_.lx_) % Coordinates_.lx_;
         y_pos = (y_pos + Coordinates_.ly_) % Coordinates_.ly_;
 
+
+        i_original=Coordinates_.Nc(x_pos, y_pos);
+        i_mx = Coordinates_.neigh(i_original, MX);
+        i_my = Coordinates_.neigh(i_original, MY);
+        upx = MFParams_.u_pX( Coordinates_.indx(i_original), Coordinates_.indy(i_original) );
+        umx = MFParams_.u_pX( Coordinates_.indx(i_mx), Coordinates_.indy(i_mx) );
+        upy = MFParams_.u_pY( Coordinates_.indx(i_original), Coordinates_.indy(i_original) );
+        umy = MFParams_.u_pY( Coordinates_.indx(i_my), Coordinates_.indy(i_my) );
+
+
         ei = MFParams_.etheta(x_pos, y_pos);
         ai = MFParams_.ephi(x_pos, y_pos);
         den = MFParams_.Local_density(x_pos, y_pos);
 
         HamCluster_(i, i) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
         HamCluster_(i + ns, i + ns) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
+
+        HamCluster_(i, i) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*(umx-upx  +  umy-upy);
+        HamCluster_(i + ns_, i + ns_) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*(umx-upx  +  umy-upy);
+
         HamCluster_(i, i) += Parameters_.J_Hund * (cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
         HamCluster_(i + ns, i + ns) += Parameters_.J_Hund * (-cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
         HamCluster_(i, i + ns) += Parameters_.J_Hund * sin(ei) * complex<double>(cos(ai), -sin(ai)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos); //S-
