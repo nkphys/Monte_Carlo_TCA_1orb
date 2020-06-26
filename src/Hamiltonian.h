@@ -526,7 +526,7 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site)
         HamCluster_(i + ns, i + ns) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
 
         HamCluster_(i, i) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*(umx-upx  +  umy-upy);
-        HamCluster_(i + ns_, i + ns_) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*(umx-upx  +  umy-upy);
+        HamCluster_(i + ns, i + ns) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*(umx-upx  +  umy-upy);
 
         HamCluster_(i, i) += Parameters_.J_Hund * (cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
         HamCluster_(i + ns, i + ns) += Parameters_.J_Hund * (-cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
