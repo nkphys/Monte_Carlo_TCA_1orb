@@ -281,10 +281,10 @@ void Hamiltonian::Initialize()
 {
 
     //For Hubbard Stratonovich transformation
-    //HS_factor = 1.0;
+    HS_factor = 1.0;
 
     //else use
-    HS_factor=0.0;
+    //HS_factor=0.0;
 
     int ns = (Parameters_.lx_cluster) * (Parameters_.ly_cluster);
 
@@ -375,14 +375,14 @@ double Hamiltonian::GetCLEnergy()
     EClassical = double(0.0);
 
     if(HS_factor!=0.0){
-    for (int ix = 0; ix < lx_; ix++)
-    {
-        for (int iy = 0; iy < ly_; iy++)
+        for (int ix = 0; ix < lx_; ix++)
         {
+            for (int iy = 0; iy < ly_; iy++)
+            {
 
-            EClassical += HS_factor * (-0.5) * Parameters_.J_Hund * ((MFParams_.Moment_Size(ix, iy) * MFParams_.Moment_Size(ix, iy)) - (0.25 * MFParams_.Local_density(ix, iy) * MFParams_.Local_density(ix, iy)));
+                EClassical += HS_factor * (-0.5) * Parameters_.J_Hund * ((MFParams_.Moment_Size(ix, iy) * MFParams_.Moment_Size(ix, iy)) - (0.25 * MFParams_.Local_density(ix, iy) * MFParams_.Local_density(ix, iy)));
+            }
         }
-    }
     }
 
 
@@ -456,9 +456,9 @@ void Hamiltonian::InteractionsCreate()
         Ham_(i + ns_, i + ns_) += HS_factor * (-0.25) * Parameters_.J_Hund * (den);
 
         Ham_(i, i) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*
-                        (umx-upx  +  umy-upy);
+                (umx-upx  +  umy-upy);
         Ham_(i + ns_, i + ns_) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*
-                        (umx-upx  +  umy-upy);
+                (umx-upx  +  umy-upy);
 
         Ham_(i, i) += Parameters_.J_Hund * (cos(ei)) * 0.5 * MFParams_.Moment_Size(Coordinates_.indx(i), Coordinates_.indy(i));
         Ham_(i + ns_, i + ns_) += Parameters_.J_Hund * (-cos(ei)) * 0.5 * MFParams_.Moment_Size(Coordinates_.indx(i), Coordinates_.indy(i));
@@ -724,6 +724,47 @@ void Hamiltonian::HTBCreate()
                 HTB_(a, b) = conj(HTB_(b, a));
             }
         }
+
+
+        if(Parameters_.Geometry=="Triangular"){
+
+            // * +x+y direction Neighbor
+            if (Coordinates_.indy(l) == (Coordinates_.ly_ - 1))
+            {
+                phasey = Parameters_.BoundaryConnection*exp(iota_complex * 2.0 * (1.0 * my) * PI / (1.0 * Parameters_.TBC_cellsY));
+            }
+            else
+            {
+                phasey = one_complex;
+            }
+            if (Coordinates_.indx(l) == (Coordinates_.lx_ - 1))
+            {
+                phasex = Parameters_.BoundaryConnection*exp(iota_complex * 2.0 * (1.0 * mx) * PI / (1.0 * Parameters_.TBC_cellsX));
+            }
+            else
+            {
+                phasex = one_complex;
+            }
+
+            m = Coordinates_.neigh(l, 4);
+            for (int spin = 0; spin < 2; spin++)
+            {
+
+                a = l + ns_ * spin;
+                b = m + ns_ * spin;
+                assert(a != b);
+                if (a != b)
+                {
+
+                    HTB_(b, a) = complex<double>(1.0 * Parameters_.t_hopping, 0.0) * phasey*phasex;
+
+                    HTB_(a, b) = conj(HTB_(b, a));
+                }
+            }
+
+        }
+
+
     }
 
 } // ----------
@@ -732,72 +773,93 @@ void Hamiltonian::HTBClusterCreate()
 {
 
     if(Parameters_.ED_==false){
-    int ns = (Parameters_.lx_cluster) * (Parameters_.ly_cluster);
+        int ns = (Parameters_.lx_cluster) * (Parameters_.ly_cluster);
 
-    complex<double> phasex, phasey;
-    int l, m, a, b;
+        complex<double> phasex, phasey;
+        int l, m, a, b;
 
-    HTBCluster_.fill(0.0);
+        HTBCluster_.fill(0.0);
 
-    for (l = 0; l < ns; l++)
-    {
-
-        // * +x direction Neighbor
-        if (CoordinatesCluster_.indx(l) == (CoordinatesCluster_.lx_ - 1))
-        {
-            phasex = one_complex;
-            phasey = one_complex;
-        }
-        else
-        {
-            phasex = one_complex;
-            phasey = one_complex;
-        }
-        m = CoordinatesCluster_.neigh(l, 0);
-        for (int spin = 0; spin < 2; spin++)
+        for (l = 0; l < ns; l++)
         {
 
-            a = l + ns * spin;
-            b = m + ns * spin;
-            assert(a != b);
-            if (a != b)
+            // * +x direction Neighbor
+            if (CoordinatesCluster_.indx(l) == (CoordinatesCluster_.lx_ - 1))
+            {
+                phasex = one_complex;
+                phasey = one_complex;
+            }
+            else
+            {
+                phasex = one_complex;
+                phasey = one_complex;
+            }
+            m = CoordinatesCluster_.neigh(l, 0);
+            for (int spin = 0; spin < 2; spin++)
             {
 
-                HTBCluster_(a, b) = complex<double>(1.0 * Parameters_.t_hopping, 0.0) * phasex;
-                HTBCluster_(b, a) = conj(HTBCluster_(a, b));
+                a = l + ns * spin;
+                b = m + ns * spin;
+                assert(a != b);
+                if (a != b)
+                {
+
+                    HTBCluster_(a, b) = complex<double>(1.0 * Parameters_.t_hopping, 0.0) * phasex;
+                    HTBCluster_(b, a) = conj(HTBCluster_(a, b));
+                }
             }
-        }
 
-        // * +y direction Neighbor
-        if (CoordinatesCluster_.indy(l) == (CoordinatesCluster_.ly_ - 1))
-        {
-            phasex = one_complex;
-            phasey = one_complex;
-        }
-        else
-        {
-            phasex = one_complex;
-            phasey = one_complex;
-        }
-        m = CoordinatesCluster_.neigh(l, 2);
-        for (int spin = 0; spin < 2; spin++)
-        {
-
-            a = l + ns * spin;
-            b = m + ns * spin;
-            assert(a != b);
-            if (a != b)
+            // * +y direction Neighbor
+            if (CoordinatesCluster_.indy(l) == (CoordinatesCluster_.ly_ - 1))
+            {
+                phasex = one_complex;
+                phasey = one_complex;
+            }
+            else
+            {
+                phasex = one_complex;
+                phasey = one_complex;
+            }
+            m = CoordinatesCluster_.neigh(l, 2);
+            for (int spin = 0; spin < 2; spin++)
             {
 
-                HTBCluster_(a, b) = complex<double>(1.0 * Parameters_.t_hopping, 0.0) * phasey;
-                HTBCluster_(b, a) = conj(HTBCluster_(a, b));
+                a = l + ns * spin;
+                b = m + ns * spin;
+                assert(a != b);
+                if (a != b)
+                {
+
+                    HTBCluster_(a, b) = complex<double>(1.0 * Parameters_.t_hopping, 0.0) * phasey;
+                    HTBCluster_(b, a) = conj(HTBCluster_(a, b));
+                }
             }
+
+
+            if(Parameters_.Geometry=="Triangular"){
+
+                // * +x+y direction Neighbor
+                m = CoordinatesCluster_.neigh(l, 4);
+                for (int spin = 0; spin < 2; spin++)
+                {
+                    a = l + ns * spin;
+                    b = m + ns * spin;
+                    assert(a != b);
+                    if (a != b)
+                    {
+                        HTBCluster_(a, b) = complex<double>(1.0 * Parameters_.t_hopping, 0.0);
+                        HTBCluster_(b, a) = conj(HTBCluster_(a, b));
+                    }
+                }
+
+            }
+
+
         }
-    }
 
     }
     else{
-      HTBCluster_=HTB_;
+        HTBCluster_=HTB_;
     }
 
     // HTBCluster_.print();

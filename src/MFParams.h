@@ -200,6 +200,19 @@ double MFParams::random2()
 void MFParams::initialize()
 {
 
+    int spin_offset;
+    bool ZigZag_Ising_alongZ=false;
+    bool ZigZag_Ising_alongX=false;
+    if(Parameters_.Geometry=="Triangular"){
+
+        //ZigZag_Ising_alongZ=true;
+        ZigZag_Ising_alongX=true;
+        if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX){
+            assert (!Parameters_.MC_on_theta_and_phi_and_u  && !Parameters_.MC_on_theta_and_phi  && !Parameters_.MC_on_theta && !Parameters_.MC_on_phi);
+        }
+
+    }
+
     lx_ = Coordinates_.lx_;
     ly_ = Coordinates_.ly_;
 
@@ -268,9 +281,15 @@ void MFParams::initialize()
         {
             for (int iy = 0; iy < ly_; iy++)
             {
-                // cout << "ix_=" << ix_ << " ix=" << ix << endl;
-                // cout << "iy_=" << iy_ << " iy=" << iy << endl;
-                Initial_Seed >> ix_ >> iy_ >> etheta(ix, iy) >> ephi(ix, iy) >> Moment_Size(ix, iy) >> Local_density(ix, iy) >> u_pX(ix,iy) >> u_pY(ix,iy);
+
+                Initial_Seed >> ix_ >> iy_ >> etheta(ix, iy) >> ephi(ix, iy) >> Moment_Size(ix, iy) >> Local_density(ix, iy) ;//>> u_pX(ix,iy) >> u_pY(ix,iy);
+//                cout << "ix_=" << ix_ << " ix=" << ix << endl;
+//                cout << "iy_=" << iy_ << " iy=" << iy << endl;
+
+
+                if(ix_!=ix){
+                 cout<<"ix_="<<ix_<<"  ix="<<ix<<endl;
+                }
                 assert(ix_ == ix);
                 assert(iy_ == iy);
                 // << ix << setw(15) << iy << setw(15) << MFParams_.etheta(ix, iy) << setw(15) << MFParams_.ephi(ix, iy)
@@ -327,7 +346,26 @@ void MFParams::initialize()
                         }
                         else
                         {
+                            if(ZigZag_Ising_alongX){
+                                if(j%2==0){
+                                    iy_=j/2;
+                                }
+                                else{
+                                    iy_ = (j-1)/2;
+                                }
+                                if(iy_%2==0){
+                                    spin_offset=1;
+                                }
+                                else{
+                                    spin_offset=-1;
+                                }
+                                ephi(i, j) = (((pow(-1,i)*spin_offset*1.0) + 1.0) *0.5* PI);
+
+                            }
+                            else{
                             ephi(i, j) = 0.0;
+                            }
+
                         }
 
                         if (Parameters_.MC_on_theta == true)
@@ -336,7 +374,28 @@ void MFParams::initialize()
                         }
                         else
                         {
-                            etheta(i, j) = 0.0;
+                            if(ZigZag_Ising_alongZ){
+
+                                if(j%2==0){
+                                    iy_=j/2;
+                                }
+                                else{
+                                    iy_ = (j-1)/2;
+                                }
+                                if(iy_%2==0){
+                                    spin_offset=1;
+                                }
+                                else{
+                                    spin_offset=-1;
+                                }
+                                etheta(i, j) = ((pow(-1,i)*spin_offset*1.0) + 1.0) *0.5* PI;
+
+
+                            }
+                            else{
+                                etheta(i, j) = PI*0.5;
+                            }
+
                         }
 
                         u_pX(i,j)=0.0;

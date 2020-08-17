@@ -19,6 +19,7 @@ public:
     double BoundaryConnection;
     bool Read_Seed_from_file_;
     string Seed_file_name_;
+    string Geometry;
 //    bool J_Hund_InfinityLimit;
 
     double t_hopping;
@@ -68,7 +69,6 @@ void Parameters::Initialize(string inputfile_)
 
     maxmoment = 10.0;
     t_hopping = -1.0;
-    int J_Hund_InfinityLimit_int;
     string monte_carlo_variables_;
     double cooling_double;
     double Read_Seed_from_file_double;
@@ -82,6 +82,16 @@ void Parameters::Initialize(string inputfile_)
     cout << "____________________________________" << endl;
     cout << "Reading the inputfile: " << inputfile_ << endl;
     cout << "____________________________________" << endl;
+
+
+    Geometry = matchstring2(inputfile_, "Geometry");
+    if(Geometry=="Triangular" || Geometry=="SquareLattice"){
+        cout<<"Geometry="<<Geometry<< "is used"<<endl;
+    }
+    else{
+        cout<<"Only Geometries in (Triangular , SquareLattice) are allowed"<<endl;
+        assert(Geometry=="Triangular" || Geometry=="SquareLattice");
+    }
 
     monte_carlo_variables_ = matchstring2(inputfile_, "Monte_Carlo_variables");
 
@@ -149,6 +159,7 @@ void Parameters::Initialize(string inputfile_)
     lx_cluster = int(matchstring(inputfile_, "Cluster_lx"));
     ly_cluster = int(matchstring(inputfile_, "Cluster_ly"));
     SavingMicroscopicStates_int = int(matchstring(inputfile_, "SavingMicroscopicStates"));
+
     fix_mu = matchstring(inputfile_, "Fix_mu");
     fixed_mu_value = double(matchstring(inputfile_, "fixed_mu_value")) * 1.0;
     BoundaryConnection = double(matchstring(inputfile_, "PBC"));

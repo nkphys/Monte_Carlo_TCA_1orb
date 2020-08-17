@@ -54,7 +54,7 @@ int Coordinates::Nc(int x, int y){
 
 
 int Coordinates::neigh(int site, int wneigh){
-    if(site>ns_-1 || wneigh>=4){perror("Coordinates.h:getneigh -> ifstatement-1");}
+    if(site>ns_-1 || wneigh>=7){perror("Coordinates.h:getneigh -> ifstatement-1");}
     return neigh_(site,wneigh);
 } // ----------
 
@@ -66,7 +66,7 @@ void Coordinates::Numbering(){
     indx_.clear(); 	indx_.resize(ns_);
     indy_.clear();	indy_.resize(ns_);
     Nc_.resize(lx_,ly_);
-    neigh_.resize(ns_,4);
+    neigh_.resize(ns_,8);
 
     // Site labeling
     int icount=0;
@@ -80,7 +80,7 @@ void Coordinates::Numbering(){
 
     // Neighbors for each site
     for(int i=0;i<ns_;i++){ 	// ith site
-        for(int j=0;j<4;j++) {		// jth neighbor
+        for(int j=0;j<8;j++) {		// jth neighbor
             neigh_(i,j)=getneigh(i,j);
         }
     }
@@ -89,7 +89,7 @@ void Coordinates::Numbering(){
 
 
 int Coordinates::getneigh(int site,int wneigh){
-    if(site>ns_-1 || wneigh>3){perror("Coordinates.h:getneigh -> ifstatement-1");}
+    if(site>ns_-1 || wneigh>7){perror("Coordinates.h:getneigh -> ifstatement-1");}
     int nx=indx(site);
     int ny=indy(site);
     int mx=0;
@@ -113,7 +113,7 @@ int Coordinates::getneigh(int site,int wneigh){
         my=(ny+ly_-1)%(ly_);
     }
 
-    /*
+
     // Next-Nearest!
     if(wneigh==4){ //PXPY
         mx=(nx+1)%(lx_);
@@ -131,7 +131,7 @@ int Coordinates::getneigh(int site,int wneigh){
         mx=(nx+1)%(lx_);
         my=(ny+ly_-1)%(ly_);
     }
-    */
+
 
     return Nc_(mx,my); //Nc(mx,my);
 } // ----------

@@ -154,23 +154,23 @@ void MCEngine::RUN_MC()
 
         PrevE = Hamiltonian_.GetCLEnergy();
         Hamiltonian_.InteractionsCreate();
-//        Hamiltonian_.Ham_.print();
+        //        Hamiltonian_.Ham_.print();
         //cout << "Here 1"<<endl;
         // Hamiltonian_.Check_Hermiticity();
         //cout << "Here 2" << endl;
         Hamiltonian_.Diagonalize(Parameters_.Dflag);
 
-//        for(int n=0;n<2*Parameters_.ns;n++){
-//            cout<<n<<"  "<<Hamiltonian_.eigs_[n]<<endl;
-//        }
-//        assert(false);
+        //        for(int n=0;n<2*Parameters_.ns;n++){
+        //            cout<<n<<"  "<<Hamiltonian_.eigs_[n]<<endl;
+        //        }
+        //        assert(false);
 
         n_states_occupied_zeroT = Parameters_.ns * Parameters_.Fill * 2.0;
         if(!Parameters_.fixed_mu_value){
-        initial_mu_guess = 0.5 * (Hamiltonian_.eigs_[n_states_occupied_zeroT - 1] + Hamiltonian_.eigs_[n_states_occupied_zeroT]);
+            initial_mu_guess = 0.5 * (Hamiltonian_.eigs_[n_states_occupied_zeroT - 1] + Hamiltonian_.eigs_[n_states_occupied_zeroT]);
         }
         else{
-        initial_mu_guess=Parameters_.fixed_mu_value;
+            initial_mu_guess=Parameters_.fixed_mu_value;
         }
         //initial_mu_guess=0.25;
         Parameters_.mus = Hamiltonian_.chemicalpotential(initial_mu_guess, Parameters_.Fill);
@@ -286,7 +286,12 @@ void MCEngine::RUN_MC()
                     P12 = P_new - Parameters_.beta * ((CurrE) - (PrevE));
                     //P12 = - Parameters_.beta*((CurrE)-(PrevE));
                     //cout<<P12<<endl;
-                    P12 += log((sin(MFParams_.etheta(x, y)) / sin(saved_Params[0])));
+                    if(Parameters_.MC_on_theta_and_phi_and_u ||
+                            Parameters_.MC_on_theta_and_phi ||
+                            Parameters_.MC_on_theta
+                            ){
+                        P12 += log((sin(MFParams_.etheta(x, y)) / sin(saved_Params[0])));
+                    }
 
 
 
