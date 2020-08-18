@@ -217,9 +217,9 @@ void MFParams::initialize()
     bool Coplanar120_in_XYplane=false;
     if(Parameters_.Geometry=="Triangular"){
 
-        //ZigZag_Ising_alongZ=true;
+        ZigZag_Ising_alongZ=true;
         //ZigZag_Ising_alongX=true;
-        Coplanar120_in_XYplane=true;
+        //Coplanar120_in_XYplane=true;
         if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX || Coplanar120_in_XYplane){
             assert (!Parameters_.MC_on_theta_and_phi_and_u  && !Parameters_.MC_on_theta_and_phi  && !Parameters_.MC_on_theta && !Parameters_.MC_on_phi);
         }

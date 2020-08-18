@@ -540,6 +540,10 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site)
         ai = MFParams_.ephi(x_pos, y_pos);
         den = MFParams_.Local_density(x_pos, y_pos);
 
+
+        HamCluster_(i, i) += (-2.0)*Parameters_.SIA * (cos(ei))*  0.5 * MFParams_.Moment_Size(x_pos, y_pos);
+        HamCluster_(i + ns_, i + ns_) += (2.0)*Parameters_.SIA * (cos(ei))*  0.5 * MFParams_.Moment_Size(x_pos, y_pos);
+
         HamCluster_(i, i) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
         HamCluster_(i + ns, i + ns) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
 
