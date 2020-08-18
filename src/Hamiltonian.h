@@ -381,9 +381,21 @@ double Hamiltonian::GetCLEnergy()
             {
 
                 EClassical += HS_factor * (-0.5) * Parameters_.J_Hund * ((MFParams_.Moment_Size(ix, iy) * MFParams_.Moment_Size(ix, iy)) - (0.25 * MFParams_.Local_density(ix, iy) * MFParams_.Local_density(ix, iy)));
+
             }
         }
     }
+
+    for (int ix = 0; ix < lx_; ix++)
+    {
+        for (int iy = 0; iy < ly_; iy++)
+        {
+
+            EClassical +=  Parameters_.SIA * ((MFParams_.Moment_Size(ix, iy) * MFParams_.Moment_Size(ix, iy)) );
+
+        }
+    }
+
 
 
     int _ix, _iy;
@@ -454,6 +466,12 @@ void Hamiltonian::InteractionsCreate()
 
         Ham_(i, i) += HS_factor * (-0.25) * Parameters_.J_Hund * (den);
         Ham_(i + ns_, i + ns_) += HS_factor * (-0.25) * Parameters_.J_Hund * (den);
+
+
+        Ham_(i, i) += (-2.0)*Parameters_.SIA * (cos(ei))*  0.5 * MFParams_.Moment_Size(Coordinates_.indx(i), Coordinates_.indy(i));
+        Ham_(i + ns_, i + ns_) += (2.0)*Parameters_.SIA * (cos(ei))*  0.5 * MFParams_.Moment_Size(Coordinates_.indx(i), Coordinates_.indy(i));
+
+
 
         Ham_(i, i) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*
                 (umx-upx  +  umy-upy);

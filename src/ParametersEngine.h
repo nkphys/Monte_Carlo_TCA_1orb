@@ -12,6 +12,7 @@ public:
     int lx_cluster, ly_cluster;
     double mus, mus_Cluster, Fill, pi;
     double J_Hund, K1x, K1y;
+    double SIA; //Single Ion Anisotropy
     double lambda_lattice;
     double k_const;
     double Disorder_Strength, RandomDisorderSeed;
@@ -192,6 +193,7 @@ void Parameters::Initialize(string inputfile_)
     Disorder_Strength = matchstring(inputfile_, "Disorder_Strength");
     Boltzman_constant = matchstring(inputfile_, "Boltzman_constant");
     J_Hund = matchstring(inputfile_, "J_Hund");
+    SIA = matchstring(inputfile_,"SingleIonAnisotropy");
     lambda_lattice = matchstring (inputfile_, "lambda_lattice");
     K1x = matchstring(inputfile_, "K");
     K1y = K1x;

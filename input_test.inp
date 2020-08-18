@@ -17,6 +17,7 @@ Boltzman_constant=1.0
 RandomDisorderSeed=413
 Disorder_Strength=0.0
 J_Hund=-10.0
+SingleIonAnisotropy=0.5
 lambda_lattice=0.0
 K=0.0
 
