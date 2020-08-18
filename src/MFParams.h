@@ -215,12 +215,15 @@ void MFParams::initialize()
     bool ZigZag_Ising_alongZ=false;
     bool ZigZag_Ising_alongX=false;
     bool Coplanar120_in_XYplane=false;
+    bool Coplanar120_in_XZplane=false;
     if(Parameters_.Geometry=="Triangular"){
 
-        ZigZag_Ising_alongZ=true;
+        //ZigZag_Ising_alongZ=true;
         //ZigZag_Ising_alongX=true;
         //Coplanar120_in_XYplane=true;
-        if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX || Coplanar120_in_XYplane){
+        Coplanar120_in_XZplane=true;
+        if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX
+          || Coplanar120_in_XYplane || Coplanar120_in_XZplane){
             assert (!Parameters_.MC_on_theta_and_phi_and_u  && !Parameters_.MC_on_theta_and_phi  && !Parameters_.MC_on_theta && !Parameters_.MC_on_phi);
         }
 
@@ -444,6 +447,21 @@ void MFParams::initialize()
                         ephi(i, j) = (PI*0.5) + ((i*2.0*PI)/3.0) + ((j*2.0*PI)/3.0);
                         ephi(i, j) = fmod(ephi(i, j), 2.0 * PI);
                     }
+
+                    if(Coplanar120_in_XZplane){
+
+                        ephi(i,j)=0.0;
+                        etheta(i, j) = (PI*0.5) + ((i*2.0*PI)/3.0) + ((j*2.0*PI)/3.0);
+                        etheta(i, j) = fmod(etheta(i, j), 2.0 * PI);
+
+                        if(etheta(i, j) > PI){
+                        etheta(i, j) = (2.0*PI) - etheta(i, j);
+                        ephi(i,j)=PI;
+                        }
+
+                    }
+
+
 
                 }
                 else if (Parameters_.Perform_HF_SC_calculation == true)
