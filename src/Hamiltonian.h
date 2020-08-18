@@ -391,7 +391,7 @@ double Hamiltonian::GetCLEnergy()
         for (int iy = 0; iy < ly_; iy++)
         {
 
-            EClassical +=  Parameters_.SIA * ((MFParams_.Moment_Size(ix, iy) * MFParams_.Moment_Size(ix, iy)) );
+            EClassical +=  Parameters_.SIA * ((MFParams_.Moment_Size(ix, iy) * MFParams_.Moment_Size(ix, iy)) *cos(ei)*cos(ei) );
 
         }
     }
