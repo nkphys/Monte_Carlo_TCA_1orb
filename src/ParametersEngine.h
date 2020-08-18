@@ -33,6 +33,7 @@ public:
     bool Heat_Bath_Algorithm;
     bool Perform_HF_SC_calculation;
     bool Simple_Mixing;
+    bool Translational_symmetry_imposed;
 
 
     bool MC_on_theta, MC_on_phi, MC_on_theta_and_phi, MC_on_theta_and_phi_and_u, MC_on_moment_size, MC_on_local_density;
@@ -161,6 +162,7 @@ void Parameters::Initialize(string inputfile_)
     SavingMicroscopicStates_int = int(matchstring(inputfile_, "SavingMicroscopicStates"));
 
     fix_mu = matchstring(inputfile_, "Fix_mu");
+    Translational_symmetry_imposed = matchstring(inputfile_, "Translational_symmetry_imposed");
     fixed_mu_value = double(matchstring(inputfile_, "fixed_mu_value")) * 1.0;
     BoundaryConnection = double(matchstring(inputfile_, "PBC"));
 

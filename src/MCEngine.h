@@ -335,7 +335,15 @@ void MCEngine::RUN_MC()
                         act = 0;
                         MFParams_.etheta(x, y) = saved_Params[0];
                         MFParams_.ephi(x, y) = saved_Params[1];
-                        MFParams_.Moment_Size(x, y) = saved_Params[2];
+
+                        if(Parameters_.Translational_symmetry_imposed){
+                            for(int x_=0;x_<lx_;x_++){
+                                for(int y_=0;y_<ly_;y_++){
+                                    MFParams_.Moment_Size(x_, y_) = saved_Params[2];
+                                }}}
+                        else{
+                            MFParams_.Moment_Size(x, y) = saved_Params[2];
+                        }
                         MFParams_.Local_density(x, y) = saved_Params[3];
                         MFParams_.u_pX(x,y) = saved_Params[4];
                         MFParams_.u_pY(x,y) = saved_Params[5];

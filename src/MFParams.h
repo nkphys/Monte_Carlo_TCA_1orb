@@ -70,6 +70,7 @@ void MFParams::FieldThrow(int site, string mc_dof_type)
     int a, b;
 
     int Pi_multiple;
+    double temp_double;
 
     double Pi = Parameters_.pi;
     double MC_Window = Parameters_.WindowSize;
@@ -170,7 +171,17 @@ void MFParams::FieldThrow(int site, string mc_dof_type)
     {
         if (Parameters_.MC_on_moment_size == true)
         {
-            Moment_Size(a, b) = abs(Moment_Size(a, b) + ((random1() - 0.5) * MC_Window));
+            if(Parameters_.Translational_symmetry_imposed){
+                temp_double = abs(Moment_Size(a, b) + ((random1() - 0.5) * MC_Window));
+                for(int ix_=0;ix_<lx_;ix_++){
+                    for(int iy_=0;iy_<ly_;iy_++){
+                        Moment_Size(ix_, iy_) = temp_double;
+                    }
+                }
+            }
+            else{
+                Moment_Size(a, b) = abs(Moment_Size(a, b) + ((random1() - 0.5) * MC_Window));
+            }
         }
     }
 
@@ -206,7 +217,7 @@ void MFParams::initialize()
     if(Parameters_.Geometry=="Triangular"){
 
         //ZigZag_Ising_alongZ=true;
-        ZigZag_Ising_alongX=true;
+        //ZigZag_Ising_alongX=true;
         if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX){
             assert (!Parameters_.MC_on_theta_and_phi_and_u  && !Parameters_.MC_on_theta_and_phi  && !Parameters_.MC_on_theta && !Parameters_.MC_on_phi);
         }
@@ -283,12 +294,12 @@ void MFParams::initialize()
             {
 
                 Initial_Seed >> ix_ >> iy_ >> etheta(ix, iy) >> ephi(ix, iy) >> Moment_Size(ix, iy) >> Local_density(ix, iy) ;//>> u_pX(ix,iy) >> u_pY(ix,iy);
-//                cout << "ix_=" << ix_ << " ix=" << ix << endl;
-//                cout << "iy_=" << iy_ << " iy=" << iy << endl;
+                //                cout << "ix_=" << ix_ << " ix=" << ix << endl;
+                //                cout << "iy_=" << iy_ << " iy=" << iy << endl;
 
 
                 if(ix_!=ix){
-                 cout<<"ix_="<<ix_<<"  ix="<<ix<<endl;
+                    cout<<"ix_="<<ix_<<"  ix="<<ix<<endl;
                 }
                 assert(ix_ == ix);
                 assert(iy_ == iy);
@@ -363,7 +374,7 @@ void MFParams::initialize()
 
                             }
                             else{
-                            ephi(i, j) = 0.0;
+                                ephi(i, j) = 0.0;
                             }
 
                         }
@@ -404,8 +415,13 @@ void MFParams::initialize()
 
                     if (Parameters_.MC_on_moment_size == true)
                     {
-                        Moment_Size(i, j) = random1();
-                        //   Moment_Size(i,j)=0.5;
+                        if(!Parameters_.Translational_symmetry_imposed){
+                            Moment_Size(i, j) = random1();
+                        }
+                        else{
+                            Moment_Size(i,j)=1.0;
+                        }
+
                         //Moment_Size(i,j)=1.0 - (random1() - 0.5)*0.1;
                     }
                     else
