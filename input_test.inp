@@ -1,5 +1,4 @@
 PBC=1
-:q
 Perform_ED=1
 Geometry=Triangular
 Xsite=6
@@ -17,7 +16,7 @@ Boltzman_constant=1.0
 
 RandomDisorderSeed=413
 Disorder_Strength=0.0
-J_Hund=-10.0
+J_Hund=-1.0
 lambda_lattice=0.0
 K=0.0
 

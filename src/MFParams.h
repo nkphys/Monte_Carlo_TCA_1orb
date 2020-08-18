@@ -214,11 +214,13 @@ void MFParams::initialize()
     int spin_offset;
     bool ZigZag_Ising_alongZ=false;
     bool ZigZag_Ising_alongX=false;
+    bool Coplanar120_in_XYplane=false;
     if(Parameters_.Geometry=="Triangular"){
 
         //ZigZag_Ising_alongZ=true;
         //ZigZag_Ising_alongX=true;
-        if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX){
+        Coplanar120_in_XYplane=true;
+        if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX || Coplanar120_in_XYplane){
             assert (!Parameters_.MC_on_theta_and_phi_and_u  && !Parameters_.MC_on_theta_and_phi  && !Parameters_.MC_on_theta && !Parameters_.MC_on_phi);
         }
 
@@ -437,6 +439,12 @@ void MFParams::initialize()
                     {
                         Local_density(i, j) = Parameters_.Fill * 2.0;
                     }
+
+                    if(Coplanar120_in_XYplane){
+                        ephi(i, j) = (PI*0.5) + ((i*2.0*PI)/3.0) + ((j*2.0*PI)/3.0);
+                        ephi(i, j) = fmod(ephi(i, j), 2.0 * PI);
+                    }
+
                 }
                 else if (Parameters_.Perform_HF_SC_calculation == true)
                 {
