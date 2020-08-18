@@ -16,7 +16,7 @@ Boltzman_constant=1.0
 
 RandomDisorderSeed=413
 Disorder_Strength=0.0
-J_Hund=-1.0
+J_Hund=-10.0
 lambda_lattice=0.0
 K=0.0
 
@@ -30,8 +30,8 @@ dTemperature=0.01
 
 Temperature=0.0001
 
-Metropolis_Algo=1
-MaxMCsweeps=500
+Metropolis_Algo=0
+MaxMCsweeps=2000
 Last_n_sweeps_for_measurement=10
 Measurement_after_each_m_sweeps=5
 

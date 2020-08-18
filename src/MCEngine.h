@@ -113,7 +113,7 @@ void MCEngine::RUN_MC()
         MFParams_.ephi_avg.fill(0.0);
 
         char temp_char[50];
-        sprintf(temp_char, "%.4f", temp_);
+        sprintf(temp_char, "%.10f", temp_);
 
         File_Out_progress = "output_Temp" + string(temp_char) + ".txt";
         ofstream file_out_progress(File_Out_progress.c_str());
@@ -306,7 +306,13 @@ void MCEngine::RUN_MC()
                     // if (Metropolis_Algo){
                     //    P=min(1.0,P);
                     // }
+
+                    if(Parameters_.Metropolis_Algorithm){
                     Prob_check = min(1.0,exp(P12));
+                    }
+                    else{
+                    Prob_check =exp(P12)/(1.0+exp(P12));
+                    }
 
                     /*
        * VON NEUMANN's REJECTING METHOD:
