@@ -73,16 +73,16 @@ void MCEngine::RUN_MC()
     double initial_mu_guess;
     int n_states_occupied_zeroT;
 
-    double Curr_Cluster_CLE;
-
     //starting with a random guess
 
-    while (temp_ >= Parameters_.temp_min)
-    {
+    //    while (temp_ >= Parameters_.temp_min)
+    //    {
 
+    for(int temp_point=0;temp_point<Parameters_.Temp_values.size();temp_point++){
+        temp_ = Parameters_.Temp_values[temp_point];
         cout << "Temperature = " << temp_ << " is being done" << endl;
         Parameters_.temp = temp_;
-        Parameters_.beta = double(Parameters_.Boltzman_constant / temp_);
+        Parameters_.beta = double( 1.0/(Parameters_.Boltzman_constant*temp_));
 
         for (int ix = 0; ix < lx_; ix++)
         {
@@ -308,10 +308,10 @@ void MCEngine::RUN_MC()
                     // }
 
                     if(Parameters_.Metropolis_Algorithm){
-                    Prob_check = min(1.0,exp(P12));
+                        Prob_check = min(1.0,exp(P12));
                     }
                     else{
-                    Prob_check =exp(P12)/(1.0+exp(P12));
+                        Prob_check =exp(P12)/(1.0+exp(P12));
                     }
 
                     /*
