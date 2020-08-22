@@ -216,14 +216,26 @@ void MFParams::initialize()
     bool ZigZag_Ising_alongX=false;
     bool Coplanar120_in_XYplane=false;
     bool Coplanar120_in_XZplane=false;
+    bool Collinear_alongZ_Piby2Pi=false;
+    bool Collinear_alongZ_Piby3Pi=false;
+    bool Collinear_alongZ_Piby4Pi=false;
+    bool Collinear_alongZ_0Pi=false;
+
     if(Parameters_.Geometry=="Triangular"){
 
         //ZigZag_Ising_alongZ=true;
         //ZigZag_Ising_alongX=true;
         //Coplanar120_in_XYplane=true;
-        Coplanar120_in_XZplane=true;
-        if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX
-          || Coplanar120_in_XYplane || Coplanar120_in_XZplane){
+        //Coplanar120_in_XZplane=true;
+        Collinear_alongZ_Piby2Pi=true;
+        //Collinear_alongZ_Piby3Pi=true;
+        //Collinear_alongZ_Piby4Pi=true;
+        //Collinear_alongZ_0Pi=true;
+
+        if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX ||
+           Coplanar120_in_XYplane || Coplanar120_in_XZplane ||
+           Collinear_alongZ_Piby2Pi || Collinear_alongZ_Piby3Pi ||
+           Collinear_alongZ_Piby4Pi || Collinear_alongZ_0Pi){
             assert (!Parameters_.MC_on_theta_and_phi_and_u  && !Parameters_.MC_on_theta_and_phi  && !Parameters_.MC_on_theta && !Parameters_.MC_on_phi);
         }
 
@@ -408,6 +420,61 @@ void MFParams::initialize()
 
 
                             }
+                            else if(Collinear_alongZ_Piby2Pi){
+                                if(i%2==0){
+                                    ix_=i/2;
+                                }
+                                else{
+                                    ix_ = (i-1)/2;
+                                }
+                                if(ix_%2==0){
+                                    spin_offset=1;
+                                }
+                                else{
+                                    spin_offset=-1;
+                                }
+
+                                etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
+
+                            }
+                            else if(Collinear_alongZ_Piby3Pi){
+                                if(i%3==0){
+                                    ix_=i/3;
+                                }
+                                else{
+                                    ix_ = (i  - (i%3) ) /3;
+                                }
+                                if(ix_%2==0){
+                                    spin_offset=1;
+                                }
+                                else{
+                                    spin_offset=-1;
+                                }
+
+                                etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
+
+                            }
+                            else if(Collinear_alongZ_Piby4Pi){
+                                if(i%4==0){
+                                    ix_=i/4;
+                                }
+                                else{
+                                    ix_ = (i  - (i%4) ) /4;
+                                }
+                                if(ix_%2==0){
+                                    spin_offset=1;
+                                }
+                                else{
+                                    spin_offset=-1;
+                                }
+
+                                etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
+                            }
+                            else if(Collinear_alongZ_0Pi){
+                                    spin_offset=1;
+                                etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
+                            }
+
                             else{
                                 etheta(i, j) = PI*0.5;
                             }

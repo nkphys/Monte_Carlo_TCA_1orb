@@ -252,6 +252,14 @@ void Parameters::Initialize(string inputfile_)
         d_Temp = double(matchstring(inputfile_, "dTemperature"));
         beta_max = double(Boltzman_constant / temp_min);
         beta_min = double(Boltzman_constant / temp_max);
+
+        no_of_temp_points = ((temp_max - temp_min)/(d_Temp)) + 1;
+        Temp_values.resize(no_of_temp_points);
+        for(int point=0;point<no_of_temp_points;point++){
+        Temp_values[point] = temp_max - (d_Temp*point);
+        }
+
+
     }
     else if (cooling_double == 2.0)
     {
@@ -278,6 +286,11 @@ void Parameters::Initialize(string inputfile_)
         temp_min = temp;
         temp_max = temp;
         d_Temp = 10.0; //arbitrary positive number
+
+        no_of_temp_points = 1;
+        Temp_values.resize(no_of_temp_points);
+        Temp_values[0]=temp;
+
     }
     else
     {
