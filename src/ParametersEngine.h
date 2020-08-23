@@ -38,7 +38,7 @@ public:
     bool Translational_symmetry_imposed;
 
 
-    bool MC_on_theta, MC_on_phi, MC_on_theta_and_phi, MC_on_theta_and_phi_and_u, MC_on_moment_size, MC_on_local_density;
+    bool MC_on_Ising_theta, MC_on_theta, MC_on_phi, MC_on_theta_and_phi, MC_on_theta_and_phi_and_u, MC_on_moment_size, MC_on_local_density;
 
     bool fix_mu;
 
@@ -123,6 +123,10 @@ void Parameters::Initialize(string inputfile_)
         else if (temp_string == "theta")
         {
             MC_on_theta = true;
+        }
+        else if (temp_string == "Ising_theta")
+        {
+            MC_on_Ising_theta =true;
         }
         else if (temp_string == "theta_and_phi")
         {

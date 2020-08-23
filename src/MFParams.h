@@ -135,6 +135,17 @@ void MFParams::FieldThrow(int site, string mc_dof_type)
     }
 
 
+    if (mc_dof_type == "Ising_theta")
+    {
+
+        if(random1()>0.5){
+            etheta(a, b)=Pi;
+        }
+        else{
+            etheta(a, b)=0;
+        }
+    }
+
     if (mc_dof_type == "theta_and_phi_and_u")
     {
         //phi
@@ -227,15 +238,15 @@ void MFParams::initialize()
         //ZigZag_Ising_alongX=true;
         //Coplanar120_in_XYplane=true;
         //Coplanar120_in_XZplane=true;
-        Collinear_alongZ_Piby2Pi=true;
+        //Collinear_alongZ_Piby2Pi=true;
         //Collinear_alongZ_Piby3Pi=true;
         //Collinear_alongZ_Piby4Pi=true;
         //Collinear_alongZ_0Pi=true;
 
         if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX ||
-           Coplanar120_in_XYplane || Coplanar120_in_XZplane ||
-           Collinear_alongZ_Piby2Pi || Collinear_alongZ_Piby3Pi ||
-           Collinear_alongZ_Piby4Pi || Collinear_alongZ_0Pi){
+                Coplanar120_in_XYplane || Coplanar120_in_XZplane ||
+                Collinear_alongZ_Piby2Pi || Collinear_alongZ_Piby3Pi ||
+                Collinear_alongZ_Piby4Pi || Collinear_alongZ_0Pi){
             assert (!Parameters_.MC_on_theta_and_phi_and_u  && !Parameters_.MC_on_theta_and_phi  && !Parameters_.MC_on_theta && !Parameters_.MC_on_phi);
         }
 
@@ -366,6 +377,16 @@ void MFParams::initialize()
                         u_pX(i,j)=0.0;
                         u_pX(i,j)=0.0;
                     }
+                    else if (Parameters_.MC_on_Ising_theta == true){
+                        ephi(i, j)=0.0;
+
+                        if(random1()>0.5){
+                            etheta(i, j)=PI;
+                        }
+                        else{
+                            etheta(i, j)=0;
+                        }
+                    }
                     else
                     {
                         if (Parameters_.MC_on_phi == true)
@@ -471,7 +492,7 @@ void MFParams::initialize()
                                 etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
                             }
                             else if(Collinear_alongZ_0Pi){
-                                    spin_offset=1;
+                                spin_offset=1;
                                 etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
                             }
 
@@ -522,8 +543,8 @@ void MFParams::initialize()
                         etheta(i, j) = fmod(etheta(i, j), 2.0 * PI);
 
                         if(etheta(i, j) > PI){
-                        etheta(i, j) = (2.0*PI) - etheta(i, j);
-                        ephi(i,j)=PI;
+                            etheta(i, j) = (2.0*PI) - etheta(i, j);
+                            ephi(i,j)=PI;
                         }
 
                     }
