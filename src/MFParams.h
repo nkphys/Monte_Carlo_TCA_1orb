@@ -231,6 +231,8 @@ void MFParams::initialize()
     bool Collinear_alongZ_Piby3Pi=false;
     bool Collinear_alongZ_Piby4Pi=false;
     bool Collinear_alongZ_0Pi=false;
+    bool Diagonal_ZigZag_Ising_alongZ=false;
+    bool HalfZigZag_Ising_alongZ=false;
 
     if(Parameters_.Geometry=="Triangular"){
 
@@ -242,11 +244,14 @@ void MFParams::initialize()
         //Collinear_alongZ_Piby3Pi=true;
         //Collinear_alongZ_Piby4Pi=true;
         //Collinear_alongZ_0Pi=true;
+        //Diagonal_ZigZag_Ising_alongZ=true;
+        HalfZigZag_Ising_alongZ=true;
 
         if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX ||
                 Coplanar120_in_XYplane || Coplanar120_in_XZplane ||
                 Collinear_alongZ_Piby2Pi || Collinear_alongZ_Piby3Pi ||
-                Collinear_alongZ_Piby4Pi || Collinear_alongZ_0Pi){
+                Collinear_alongZ_Piby4Pi || Collinear_alongZ_0Pi ||
+                Diagonal_ZigZag_Ising_alongZ || HalfZigZag_Ising_alongZ){
             assert (!Parameters_.MC_on_theta_and_phi_and_u  && !Parameters_.MC_on_theta_and_phi  && !Parameters_.MC_on_theta && !Parameters_.MC_on_phi);
         }
 
@@ -439,6 +444,91 @@ void MFParams::initialize()
                                 }
                                 etheta(i, j) = ((pow(-1,i)*spin_offset*1.0) + 1.0) *0.5* PI;
 
+
+                            }
+                            else if(Diagonal_ZigZag_Ising_alongZ){
+
+                                if( ((i%4)==0) || ((i%4)==1)){
+                                    spin_offset=1;
+                                }
+                                else{
+                                    spin_offset=-1;
+                                }
+
+
+                                if(j%2==0){
+                                    iy_=j/2;
+                                }
+                                else{
+                                    iy_= (j -1)/2;
+                                }
+
+
+                                if( (i%4 == 0) ||  (i%4 == 2) ){
+
+
+                                    if(iy_%2==0){
+                                        spin_offset = 1*spin_offset;
+                                    }
+                                    else{
+                                        spin_offset = -1*spin_offset;
+                                    }
+
+                                }
+                                else{
+
+                                    if( (iy_%2 == 0) && (j%2==0) ){
+                                        spin_offset = 1*spin_offset;
+                                    }
+                                    else if((iy_%2 == 1) && (j%2==0)){
+                                        spin_offset = -1*spin_offset;
+                                    }
+                                    else if((iy_%2 == 0) && (j%2==1)){
+                                        spin_offset = -1*spin_offset;
+                                    }
+                                    else{
+                                        assert ((iy_%2 == 1) && (j%2==1));
+                                        spin_offset = 1*spin_offset;
+                                    }
+                                }
+
+                                etheta(i, j) = ((-1*spin_offset*1.0) + 1.0) *0.5* PI;
+                            }
+                            else if (HalfZigZag_Ising_alongZ){
+
+
+
+                                if(i%3==0){
+                                    spin_offset=1;
+                                    if( ((j%3)==0) || ((j%3)==1)){
+                                        spin_offset=1*spin_offset;
+                                    }
+                                    else{
+                                        spin_offset=-1*spin_offset;
+                                    }
+                                }
+                                else if (i%3==1){
+                                    spin_offset=1;
+                                    if( ((j%3)==0) || ((j%3)==2)){
+                                        spin_offset=1*spin_offset;
+                                    }
+                                    else{
+                                        spin_offset=-1*spin_offset;
+                                    }
+                                }
+                                else{
+                                    assert(i%3==2);
+                                    spin_offset=-1;
+                                    if( ((j%3)==1) || ((j%3)==2)){
+                                        spin_offset=-1*spin_offset;
+                                    }
+                                    else{
+                                        spin_offset=1*spin_offset;
+                                    }
+
+                                }
+
+                                etheta(i, j) = ((-1*spin_offset*1.0) + 1.0) *0.5* PI;
 
                             }
                             else if(Collinear_alongZ_Piby2Pi){

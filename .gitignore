@@ -5,3 +5,8 @@ Monte_Carlo_TCA_1orb.config
 Monte_Carlo_TCA_1orb.creator.user
 Monte_Carlo_TCA_1orb.includes
 *.o
+TEST_RUNS/*
+Disorder_conf_used
+Initial_HF_OrderParameters_values
+Initial_MC_DOF_values
+*.txt
