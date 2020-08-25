@@ -245,7 +245,7 @@ void MFParams::initialize()
         //Collinear_alongZ_Piby4Pi=true;
         //Collinear_alongZ_0Pi=true;
         //Diagonal_ZigZag_Ising_alongZ=true;
-        HalfZigZag_Ising_alongZ=true;
+        //HalfZigZag_Ising_alongZ=true;
 
         if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX ||
                 Coplanar120_in_XYplane || Coplanar120_in_XZplane ||
