@@ -150,20 +150,16 @@ void MCEngine::RUN_MC()
 
         file_out_progress << "I_MC" << setw(15) << "S(0,1)" << setw(15) << "S(1,0)"
                           << setw(15) << "S(Pi,0)" << setw(17) << "S(0,0)" << setw(17) << "S(Pi,Pi)" << setw(17) << "S(Pi/2,Pi/2)" << setw(17) << "< N_total >"
-                          << setw(15) << "E_CL" << setw(15) << "E_QM" << setw(15) << "E_Total" << setw(15) << "mu" << endl;
+                          << setw(15) << "E_CL" << setw(15) << "E_QM" << setw(15) << "E_Total" << setw(15) << "mu" << setw(15) << "|m(site=0)|" <<endl;
 
         PrevE = Hamiltonian_.GetCLEnergy();
+        cout<<"Initial E classical = "<<PrevE<<endl;
+
+        if(!Parameters_.Ignore_Fermions){
         Hamiltonian_.InteractionsCreate();
-        //        Hamiltonian_.Ham_.print();
-        //cout << "Here 1"<<endl;
-        // Hamiltonian_.Check_Hermiticity();
-        //cout << "Here 2" << endl;
+
         Hamiltonian_.Diagonalize(Parameters_.Dflag);
 
-        //        for(int n=0;n<2*Parameters_.ns;n++){
-        //            cout<<n<<"  "<<Hamiltonian_.eigs_[n]<<endl;
-        //        }
-        //        assert(false);
 
         n_states_occupied_zeroT = Parameters_.ns * Parameters_.Fill * 2.0;
         if(!Parameters_.fixed_mu_value){
@@ -172,11 +168,13 @@ void MCEngine::RUN_MC()
         else{
             initial_mu_guess=Parameters_.fixed_mu_value;
         }
-        //initial_mu_guess=0.25;
+
         Parameters_.mus = Hamiltonian_.chemicalpotential(initial_mu_guess, Parameters_.Fill);
         Prev_QuantE = Hamiltonian_.E_QM();
         muu_prev = Parameters_.mus;
         Hamiltonian_.copy_eigs(1);
+        }
+
         cout << "Initial Classical Energy[Full System] = " << PrevE << endl;
         cout << "Initial Quantum Energy[Full System] = " << Prev_QuantE << endl;
         cout << "Initial Total Energy[Full System] = " << PrevE + Prev_QuantE << endl;
@@ -213,6 +211,7 @@ void MCEngine::RUN_MC()
 
                     //***Before change*************//
 
+                    if(!Parameters_.Ignore_Fermions){
                     if (ED_ == false)
                     {
                         //TCA is used
@@ -232,6 +231,7 @@ void MCEngine::RUN_MC()
                     else
                     {
                         assert(ED_);
+                    }
                     }
 
                     //*******************************//
@@ -265,12 +265,12 @@ void MCEngine::RUN_MC()
                         }
                     }
 
+
+                    P_new=0.0;
+                    if(!Parameters_.Ignore_Fermions){
                     Hamiltonian_.InteractionsClusterCreate(i);
-
                     Hamiltonian_.DiagonalizeCluster(Parameters_.Dflag);
-
                     Parameters_.mus_Cluster = Hamiltonian_.chemicalpotentialCluster(muu_prevCluster, Parameters_.Fill);
-
                     Curr_QuantECluster = Hamiltonian_.E_QMCluster();
 
                     //Ratio of Quantum partition functions
@@ -283,6 +283,9 @@ void MCEngine::RUN_MC()
 
                     //same mu-refrence is used, otherwise engine does not work properly
                     P_new = ProbCluster(muu_prevCluster*1.0, muu_prevCluster*1.0);
+                    //P_new = ProbCluster(muu_prevCluster*1.0, Parameters_.mus_Cluster*1.0);
+                    }
+
                     P12 = P_new - Parameters_.beta * ((CurrE) - (PrevE));
                     //P12 = - Parameters_.beta*((CurrE)-(PrevE));
                     //cout<<P12<<endl;
@@ -293,7 +296,7 @@ void MCEngine::RUN_MC()
                         P12 += log((sin(MFParams_.etheta(x, y)) / sin(saved_Params[0])));
                     }
 
-
+                    //cout<<"count = "<<count<<", i = "<<i<<" : "<<CurrE<<"  "<<PrevE<<"  "<<P12;
 
                     //Heat bath algorithm [See page-129 of Prof. Elbio's Book]
                     //Heat bath algorithm works for small changes i.e. when P~1.0
@@ -323,6 +326,7 @@ void MCEngine::RUN_MC()
                     //ACCEPTED
                     if (Prob_check > ( MFParams_.random1()) )
                     {
+                        //cout<<" Accepted";
                         Parameters_.AccCount[0]++;
                         act = 1;
                         if (ED_)
@@ -353,7 +357,12 @@ void MCEngine::RUN_MC()
                         MFParams_.Local_density(x, y) = saved_Params[3];
                         MFParams_.u_pX(x,y) = saved_Params[4];
                         MFParams_.u_pY(x,y) = saved_Params[5];
+
+                        CurrE = PrevE;
+                        Curr_QuantECluster = Prev_QuantECluster;
                     }
+
+                    //cout<<endl;
 
                     // if ((act == 1) && (count<1000)) {
 
@@ -384,7 +393,7 @@ void MCEngine::RUN_MC()
                     file_out_progress << int(1.0 * count) << setw(20) << Observables_.SiSj(0, 1) << setw(16) << Observables_.SiSj(1, 0)
                                       << setw(16) << Observables_.SiSjQ(int(lx_ / 2), 0).real()
                                       << setw(16) << Observables_.SiSjQ(0, 0).real() << setw(16) << Observables_.SiSjQ(int(lx_ / 2), int(lx_ / 2)).real() << setw(16) << Observables_.SiSjQ(int(lx_ / 4), int(lx_ / 4)).real() << setw(16) << Hamiltonian_.ClusterDensity() << setw(16) << CurrE
-                                      << setw(16) << Curr_QuantECluster << setw(16) << Curr_QuantECluster + CurrE << setw(15) << Parameters_.mus_Cluster << endl;
+                                      << setw(16) << Curr_QuantECluster << setw(16) << Curr_QuantECluster + CurrE << setw(15) << Parameters_.mus_Cluster << setw(15) << MFParams_.Moment_Size(0, 0) <<endl;
                 }
             }
             //Average and Std. deviation is calculated is done
@@ -394,6 +403,7 @@ void MCEngine::RUN_MC()
                 /*********************/
                 if (ED_ == false)
                 {
+                    if(!Parameters_.Ignore_Fermions){
                     //TCA is used
                     Parameters_.Dflag = 'V';
                     Hamiltonian_.InteractionsCreate();
@@ -402,6 +412,8 @@ void MCEngine::RUN_MC()
                     //n_states_occupied_zeroT=Parameters_.Fill*Hamiltonian_.eigsCluster_.size();
                     //initial_mu_guess=0.5*(Hamiltonian_.eigsCluster_[n_states_occupied_zeroT-1] + HamiltonianCluster_.eigs_[n_states_occupied_zeroT])
                     Parameters_.mus = Hamiltonian_.chemicalpotential(muu_prevCluster, Parameters_.Fill);
+
+                    }
                 }
                 else
                 {

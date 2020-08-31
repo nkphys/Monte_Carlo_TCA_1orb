@@ -407,7 +407,20 @@ double Hamiltonian::GetCLEnergy()
         site = Coordinates_.neigh(i, 0); //+x
         EClassical += 1.0 * Parameters_.K1x * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
         site = Coordinates_.neigh(i, 2); //+y
-        EClassical += Parameters_.K1y * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
+        EClassical += 1.0 *Parameters_.K1y * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
+
+        site = Coordinates_.neigh(i, 8); //+2x
+        EClassical += 1.0 * Parameters_.K2x * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
+        site = Coordinates_.neigh(i, 9); //+2y
+        EClassical += 1.0 *Parameters_.K2y * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
+
+        if(Parameters_.Geometry=="Triangular"){
+            site = Coordinates_.neigh(i, 4); //+x+y
+            EClassical += 1.0*Parameters_.K1_prime * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
+
+            site = Coordinates_.neigh(i, 10); //+2x+2y
+            EClassical += 1.0*Parameters_.K2_prime * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
+        }
 
         EClassical += (-1.0)*Parameters_.t_hopping * ( pow(MFParams_.u_pX(_ix,_iy)  ,2.0) + pow(MFParams_.u_pY(_ix,_iy)  ,2.0) );
     }

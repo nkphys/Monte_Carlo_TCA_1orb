@@ -11,7 +11,7 @@ public:
     int TBC_cellsX, TBC_cellsY;
     int lx_cluster, ly_cluster;
     double mus, mus_Cluster, Fill, pi;
-    double J_Hund, K1x, K1y;
+    double J_Hund, K1x, K1y, K2x, K2y, K1_prime, K2_prime;
     double SIA; //Single Ion Anisotropy
     double lambda_lattice;
     double k_const;
@@ -30,6 +30,7 @@ public:
 
     bool Cooling_;
     bool ED_;
+    bool Ignore_Fermions;
 
     bool Metropolis_Algorithm;
     bool Heat_Bath_Algorithm;
@@ -76,6 +77,7 @@ void Parameters::Initialize(string inputfile_)
     double cooling_double;
     double Read_Seed_from_file_double;
     double metropolis_double;
+    double Ignore_Fermions_double;
     double Perform_HF_SC_calculation_double;
     double Simple_Mixing_double;
     double ED_double;
@@ -202,11 +204,30 @@ void Parameters::Initialize(string inputfile_)
     J_Hund = matchstring(inputfile_, "J_Hund");
     SIA = matchstring(inputfile_,"SingleIonAnisotropy");
     lambda_lattice = matchstring (inputfile_, "lambda_lattice");
-    K1x = matchstring(inputfile_, "K");
-    K1y = K1x;
+    K1x = matchstring(inputfile_, "K1x");
+    K1y = matchstring(inputfile_, "K1y");
+    K2x = matchstring(inputfile_, "K2x");
+    K2y = matchstring(inputfile_, "K2y");
+    K1_prime = matchstring(inputfile_, "K1_prime");
+    K2_prime = matchstring(inputfile_, "K2_prime");
     cout << "K1x= " << K1x << endl;
+    cout << "K1y= " << K1y << endl;
+    cout << "K2x= " << K2x << endl;
+    cout << "K2y= " << K2y << endl;
+    cout << "K1_prime= "<<K1_prime << endl;
+    cout << "K2_prime= "<<K2_prime << endl;
+
+
 
     Dflag = 'N';
+
+    Ignore_Fermions_double = double(matchstring(inputfile_, "Ignore_Fermions"));
+    if(Ignore_Fermions_double == 1.0){
+       Ignore_Fermions=true;
+    }
+    else{
+       Ignore_Fermions=false;
+    }
 
     metropolis_double = double(matchstring(inputfile_, "Metropolis_Algo"));
     if (metropolis_double == 1.0)
