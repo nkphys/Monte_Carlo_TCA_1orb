@@ -47,7 +47,7 @@ int Coordinates::indy(int i){
 }
 
 int Coordinates::Nc(int x, int y){
-    if(x>ly_&&y<ly_){perror("Coordinates.h:ith-sitelabel of lattice excede limit");}
+    if(x>lx_&&y<ly_){perror("Coordinates.h:ith-sitelabel of lattice excede limit");}
     return Nc_(x,y);
  // ----------
 }

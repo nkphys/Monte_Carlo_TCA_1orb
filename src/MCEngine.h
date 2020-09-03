@@ -73,6 +73,11 @@ void MCEngine::RUN_MC()
     double initial_mu_guess;
     int n_states_occupied_zeroT;
 
+//    Coordinates CoordinatesCluster__(Parameters_.lx_cluster, Parameters_.ly_cluster);
+//    Hamiltonian Hamiltonian_saved(Parameters_,Coordinates_,CoordinatesCluster__,MFParams_);
+
+
+
     //starting with a random guess
 
     //    while (temp_ >= Parameters_.temp_min)
@@ -231,6 +236,7 @@ void MCEngine::RUN_MC()
                     else
                     {
                         assert(ED_);
+
                     }
                     }
 
@@ -258,6 +264,7 @@ void MCEngine::RUN_MC()
                         if (ED_)
                         {
                             Parameters_.Dflag = 'V';
+                            Hamiltonian_.HamCluster_saved_ = Hamiltonian_.HamCluster_; //saving eigenvectors of previous run
                         }
                         else
                         {
@@ -272,6 +279,8 @@ void MCEngine::RUN_MC()
                     Hamiltonian_.DiagonalizeCluster(Parameters_.Dflag);
                     Parameters_.mus_Cluster = Hamiltonian_.chemicalpotentialCluster(muu_prevCluster, Parameters_.Fill);
                     Curr_QuantECluster = Hamiltonian_.E_QMCluster();
+
+
 
                     //Ratio of Quantum partition functions
                     /*P = [ Tr(exp(-beta(Hquant_new)))/Tr(exp(-beta(Hquant_old)))]*
@@ -360,6 +369,13 @@ void MCEngine::RUN_MC()
 
                         CurrE = PrevE;
                         Curr_QuantECluster = Prev_QuantECluster;
+
+                        if(ED_){
+                        Hamiltonian_.HamCluster_ = Hamiltonian_.HamCluster_saved_;
+                        Parameters_.mus_Cluster = muu_prevCluster;
+                        Hamiltonian_.copy_eigs_Cluster(0);
+                        }
+
                     }
 
                     //cout<<endl;
@@ -418,6 +434,10 @@ void MCEngine::RUN_MC()
                 else
                 {
                     assert(ED_);
+//                    Parameters_.Dflag = 'V';
+//                    Hamiltonian_.InteractionsCreate();
+//                    Hamiltonian_.Diagonalize(Parameters_.Dflag);
+//                    Parameters_.mus = Hamiltonian_.chemicalpotential(muu_prevCluster, Parameters_.Fill);
                     Parameters_.mus = Parameters_.mus_Cluster;
                     Hamiltonian_.eigs_ = Hamiltonian_.eigsCluster_;
                     Hamiltonian_.Ham_ = Hamiltonian_.HamCluster_;
@@ -481,9 +501,9 @@ void MCEngine::RUN_MC()
 
                         File_Out_local_den_MicroState << "#x" << setw(15) << "y" << setw(15)<< "<n_up>" << setw(15)<< "<n_dn>"<<endl;
 
-                        for (int ix = 0; ix < lx_+1; ix++)
+                        for (int ix = 0; ix < (lx_+1); ix++)
                         {
-                            for (int iy = 0; iy < ly_+1; iy++)
+                            for (int iy = 0; iy < (ly_+1); iy++)
                             {
                                 temp_site_ = Coordinates_.Nc(ix%lx_, iy%ly_);
                                 File_Out_local_den_MicroState << ix << setw(15) << iy << setw(15) << Observables_.local_density[temp_site_][0]<<setw(15)

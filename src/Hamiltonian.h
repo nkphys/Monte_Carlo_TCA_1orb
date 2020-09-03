@@ -49,6 +49,8 @@ public:
     void copy_eigs(int i);                //::DONE
     void copy_eigs_Cluster(int i);        //::DONE
 
+    void clone(Hamiltonian &Hamiltonian_new);
+
     Parameters &Parameters_;
     Coordinates &Coordinates_;
     Coordinates &CoordinatesCluster_;
@@ -58,11 +60,36 @@ public:
     Matrix<complex<double>> HTBCluster_;
     Matrix<complex<double>> Ham_;
     Matrix<complex<double>> HamCluster_;
+    Matrix<complex<double>> HamCluster_saved_, Ham_saved_;
     Matrix<double> Tx, Ty, Tpxpy, Tpxmy;
     vector<double> eigs_, eigsCluster_, eigsCluster_saved_, eigs_saved_, sx_, sy_, sz_;
 
     double HS_factor;
 };
+
+
+void Hamiltonian::clone(Hamiltonian &Hamiltonian_new){
+
+    Hamiltonian_new.lx_ = lx_;
+    Hamiltonian_new.ly_ = ly_;
+    Hamiltonian_new.ns_ = ns_;
+    Hamiltonian_new.orbs_ = orbs_;
+    Hamiltonian_new.HTB_ = HTB_;
+    Hamiltonian_new.Ham_ = Ham_;
+    Hamiltonian_new.HamCluster_ = HamCluster_;
+    Hamiltonian_new.Tx = Tx;
+    Hamiltonian_new.Ty = Ty;
+    Hamiltonian_new.Tpxpy = Tpxpy;
+    Hamiltonian_new.Tpxmy = Tpxmy;
+    Hamiltonian_new.eigs_ = eigs_;
+    Hamiltonian_new.eigsCluster_saved_ = eigsCluster_;
+    Hamiltonian_new.eigs_saved_ = eigs_saved_;
+    Hamiltonian_new.sx_ = sx_;
+    Hamiltonian_new.sy_ = sy_;
+    Hamiltonian_new.sz_ = sz_;
+    Hamiltonian_new.HS_factor = HS_factor;
+
+}
 
 double Hamiltonian::chemicalpotential(double muin, double filling)
 {
@@ -280,8 +307,8 @@ double Hamiltonian::chemicalpotentialCluster(double muin, double filling)
 void Hamiltonian::Initialize()
 {
 
-    //For Hubbard Stratonovich transformation
-    HS_factor = 1.0;
+    //For Hubbard Stratonovich transformation i.e. MXMF use HS_factor=1.0;
+    HS_factor = 0.0;
 
     //else use
     //HS_factor=0.0;
@@ -297,8 +324,10 @@ void Hamiltonian::Initialize()
 
     HTB_.resize(space, space);
     Ham_.resize(space, space);
+    Ham_saved_.resize(spaceCluster, spaceCluster);
     HTBCluster_.resize(spaceCluster, spaceCluster);
     HamCluster_.resize(spaceCluster, spaceCluster);
+    HamCluster_saved_.resize(spaceCluster, spaceCluster);
     eigs_.resize(space);
     sx_.resize(space);
     sy_.resize(space);
@@ -414,13 +443,12 @@ double Hamiltonian::GetCLEnergy()
         site = Coordinates_.neigh(i, 9); //+2y
         EClassical += 1.0 *Parameters_.K2y * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
 
-        if(Parameters_.Geometry=="Triangular"){
-            site = Coordinates_.neigh(i, 4); //+x+y
-            EClassical += 1.0*Parameters_.K1_prime * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
+        site = Coordinates_.neigh(i, 4); //+x+y
+        EClassical += 1.0*Parameters_.K1_prime * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
 
-            site = Coordinates_.neigh(i, 10); //+2x+2y
-            EClassical += 1.0*Parameters_.K2_prime * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
-        }
+        site = Coordinates_.neigh(i, 10); //+2x+2y
+        EClassical += 1.0*Parameters_.K2_prime * (sx_[i] * sx_[site] + sy_[i] * sy_[site] + 1.0 * sz_[i] * sz_[site]);
+
 
         EClassical += (-1.0)*Parameters_.t_hopping * ( pow(MFParams_.u_pX(_ix,_iy)  ,2.0) + pow(MFParams_.u_pY(_ix,_iy)  ,2.0) );
     }
@@ -530,49 +558,58 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site)
         fix_mu_double = 0.0;
     }
 
-    HamCluster_ = HTBCluster_;
 
-    for (int i = 0; i < ns; i++)
-    { // For each site in cluster
-        x_pos = Coordinates_.indx(Center_site) - int(Parameters_.lx_cluster / 2) + CoordinatesCluster_.indx(i);
-        y_pos = Coordinates_.indy(Center_site) - int(Parameters_.ly_cluster / 2) + CoordinatesCluster_.indy(i);
-        x_pos = (x_pos + Coordinates_.lx_) % Coordinates_.lx_;
-        y_pos = (y_pos + Coordinates_.ly_) % Coordinates_.ly_;
+    if(Parameters_.ED_){
+        InteractionsCreate();
+        HamCluster_ = Ham_;
+    }
+    else{
+        HamCluster_ = HTBCluster_;
 
-
-        i_original=Coordinates_.Nc(x_pos, y_pos);
-        i_mx = Coordinates_.neigh(i_original, MX);
-        i_my = Coordinates_.neigh(i_original, MY);
-        upx = MFParams_.u_pX( Coordinates_.indx(i_original), Coordinates_.indy(i_original) );
-        umx = MFParams_.u_pX( Coordinates_.indx(i_mx), Coordinates_.indy(i_mx) );
-        upy = MFParams_.u_pY( Coordinates_.indx(i_original), Coordinates_.indy(i_original) );
-        umy = MFParams_.u_pY( Coordinates_.indx(i_my), Coordinates_.indy(i_my) );
+        for (int i = 0; i < ns; i++)
+        { // For each site in cluster
+            x_pos = Coordinates_.indx(Center_site) - int(Parameters_.lx_cluster / 2) + CoordinatesCluster_.indx(i);
+            y_pos = Coordinates_.indy(Center_site) - int(Parameters_.ly_cluster / 2) + CoordinatesCluster_.indy(i);
+            x_pos = (x_pos + Coordinates_.lx_) % Coordinates_.lx_;
+            y_pos = (y_pos + Coordinates_.ly_) % Coordinates_.ly_;
 
 
-        ei = MFParams_.etheta(x_pos, y_pos);
-        ai = MFParams_.ephi(x_pos, y_pos);
-        den = MFParams_.Local_density(x_pos, y_pos);
+            i_original=Coordinates_.Nc(x_pos, y_pos);
+            i_mx = Coordinates_.neigh(i_original, MX);
+            i_my = Coordinates_.neigh(i_original, MY);
+            upx = MFParams_.u_pX( Coordinates_.indx(i_original), Coordinates_.indy(i_original) );
+            umx = MFParams_.u_pX( Coordinates_.indx(i_mx), Coordinates_.indy(i_mx) );
+            upy = MFParams_.u_pY( Coordinates_.indx(i_original), Coordinates_.indy(i_original) );
+            umy = MFParams_.u_pY( Coordinates_.indx(i_my), Coordinates_.indy(i_my) );
 
 
-        HamCluster_(i, i) += (-2.0)*Parameters_.SIA * (cos(ei))*  0.5 * MFParams_.Moment_Size(x_pos, y_pos);
-        HamCluster_(i + ns, i + ns) += (2.0)*Parameters_.SIA * (cos(ei))*  0.5 * MFParams_.Moment_Size(x_pos, y_pos);
+            ei = MFParams_.etheta(x_pos, y_pos);
+            ai = MFParams_.ephi(x_pos, y_pos);
+            den = MFParams_.Local_density(x_pos, y_pos);
 
-        HamCluster_(i, i) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
-        HamCluster_(i + ns, i + ns) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
 
-        HamCluster_(i, i) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*(umx-upx  +  umy-upy);
-        HamCluster_(i + ns, i + ns) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*(umx-upx  +  umy-upy);
+            HamCluster_(i, i) += (-2.0)*Parameters_.SIA * (cos(ei))*  0.5 * MFParams_.Moment_Size(x_pos, y_pos);
+            HamCluster_(i + ns, i + ns) += (2.0)*Parameters_.SIA * (cos(ei))*  0.5 * MFParams_.Moment_Size(x_pos, y_pos);
 
-        HamCluster_(i, i) += Parameters_.J_Hund * (cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
-        HamCluster_(i + ns, i + ns) += Parameters_.J_Hund * (-cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
-        HamCluster_(i, i + ns) += Parameters_.J_Hund * sin(ei) * complex<double>(cos(ai), -sin(ai)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos); //S-
-        HamCluster_(i + ns, i) += Parameters_.J_Hund * sin(ei) * complex<double>(cos(ai), sin(ai)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);  //S+
+            HamCluster_(i, i) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
+            HamCluster_(i + ns, i + ns) += HS_factor * (-0.25) * Parameters_.J_Hund * (den) ;
 
-        for (int spin = 0; spin < 2; spin++)
-        {
-            a = i + ns * spin;
-            HamCluster_(a, a) += complex<double>(1.0, 0.0) * MFParams_.Disorder(x_pos, y_pos);
+            HamCluster_(i, i) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*(umx-upx  +  umy-upy);
+            HamCluster_(i + ns, i + ns) += -1.0*Parameters_.t_hopping*Parameters_.lambda_lattice*(umx-upx  +  umy-upy);
+
+            HamCluster_(i, i) += Parameters_.J_Hund * (cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
+            HamCluster_(i + ns, i + ns) += Parameters_.J_Hund * (-cos(ei)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);
+            HamCluster_(i, i + ns) += Parameters_.J_Hund * sin(ei) * complex<double>(cos(ai), -sin(ai)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos); //S-
+            HamCluster_(i + ns, i) += Parameters_.J_Hund * sin(ei) * complex<double>(cos(ai), sin(ai)) * 0.5 * MFParams_.Moment_Size(x_pos, y_pos);  //S+
+
+            for (int spin = 0; spin < 2; spin++)
+            {
+                a = i + ns * spin;
+                HamCluster_(a, a) += complex<double>(1.0, 0.0) * MFParams_.Disorder(x_pos, y_pos);
+            }
         }
+
+
     }
 
 } // ----------
@@ -918,6 +955,8 @@ void Hamiltonian::copy_eigs(int i)
         {
             eigs_[j] = eigs_saved_[j];
         }
+
+        //Ham_ = Ham_saved_;
     }
     else
     {
@@ -925,6 +964,8 @@ void Hamiltonian::copy_eigs(int i)
         {
             eigs_saved_[j] = eigs_[j];
         }
+
+        //Ham_saved_ = Ham_;
     }
 }
 
@@ -940,6 +981,8 @@ void Hamiltonian::copy_eigs_Cluster(int i)
         {
             eigsCluster_[j] = eigsCluster_saved_[j];
         }
+
+        //HamCluster_ = HamCluster_saved_;
     }
     else
     {
@@ -947,6 +990,8 @@ void Hamiltonian::copy_eigs_Cluster(int i)
         {
             eigsCluster_saved_[j] = eigsCluster_[j];
         }
+
+        //HamCluster_saved_ = HamCluster_;
     }
 }
 
