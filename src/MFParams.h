@@ -233,7 +233,8 @@ void MFParams::initialize()
     bool Collinear_alongZ_0Pi=false;
     bool Diagonal_ZigZag_Ising_alongZ=false;
     bool HalfZigZag_Ising_alongZ=false;
-    bool Stripes_alongZ_doped0p75=true;
+    bool Stripes_alongZ_doped0p75=false;
+    bool Stripes_alongZ_doped0p75_plus_small_randomization=true;
 
     if(Parameters_.Geometry=="Triangular"){
 
@@ -599,6 +600,21 @@ void MFParams::initialize()
                               etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
 
                              }
+                            else if(Stripes_alongZ_doped0p75_plus_small_randomization){
+
+                                if( (i%8==0) || (i%8==2) || (i%8==3) || (i%8==5)){
+                                 spin_offset=-1;
+                                }
+                                else{
+                                 spin_offset=1;
+                                }
+
+                            etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
+
+                            etheta(i, j) += random1()*0.05;
+                            ephi(i, j) = 2.0 * random1() * PI*0.05;
+
+                            }
 
                             else{
                                 etheta(i, j) = PI*0.5;
