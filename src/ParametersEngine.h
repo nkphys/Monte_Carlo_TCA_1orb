@@ -37,6 +37,7 @@ public:
     bool Perform_HF_SC_calculation;
     bool Simple_Mixing;
     bool Translational_symmetry_imposed;
+    bool Single_Diagonalization;
 
 
     bool MC_on_Ising_theta, MC_on_theta, MC_on_phi, MC_on_theta_and_phi, MC_on_theta_and_phi_and_u, MC_on_moment_size, MC_on_local_density;

@@ -233,6 +233,7 @@ void MFParams::initialize()
     bool Collinear_alongZ_0Pi=false;
     bool Diagonal_ZigZag_Ising_alongZ=false;
     bool HalfZigZag_Ising_alongZ=false;
+    bool Stripes_alongZ_doped0p75=true;
 
     if(Parameters_.Geometry=="Triangular"){
 
@@ -246,12 +247,14 @@ void MFParams::initialize()
         //Collinear_alongZ_0Pi=true;
         //Diagonal_ZigZag_Ising_alongZ=true;
         //HalfZigZag_Ising_alongZ=true;
+        //Stripes_alongZ_doped0p75=true;
 
         if(ZigZag_Ising_alongZ || ZigZag_Ising_alongX ||
                 Coplanar120_in_XYplane || Coplanar120_in_XZplane ||
                 Collinear_alongZ_Piby2Pi || Collinear_alongZ_Piby3Pi ||
                 Collinear_alongZ_Piby4Pi || Collinear_alongZ_0Pi ||
-                Diagonal_ZigZag_Ising_alongZ || HalfZigZag_Ising_alongZ){
+                Diagonal_ZigZag_Ising_alongZ || HalfZigZag_Ising_alongZ ||
+                Stripes_alongZ_doped0p75){
             assert (!Parameters_.MC_on_theta_and_phi_and_u  && !Parameters_.MC_on_theta_and_phi  && !Parameters_.MC_on_theta && !Parameters_.MC_on_phi);
         }
 
@@ -585,6 +588,17 @@ void MFParams::initialize()
                                 spin_offset=1;
                                 etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
                             }
+                            else if(Stripes_alongZ_doped0p75){
+                                  if( (i%8==0) || (i%8==2) || (i%8==3) || (i%8==5)){
+                                   spin_offset=-1;
+                                  }
+                                  else{
+                                   spin_offset=1;
+                                  }
+
+                              etheta(i, j) = ((pow(-1,j)*spin_offset*1.0) + 1.0) *0.5* PI;
+
+                             }
 
                             else{
                                 etheta(i, j) = PI*0.5;
