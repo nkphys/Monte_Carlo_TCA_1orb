@@ -22,7 +22,7 @@ public:
     bool Read_Seed_from_file_;
     string Seed_file_name_;
     string Geometry;
-//    bool J_Hund_InfinityLimit;
+    //    bool J_Hund_InfinityLimit;
 
     double t_hopping;
 
@@ -156,13 +156,13 @@ void Parameters::Initialize(string inputfile_)
 
     lx = int(matchstring(inputfile_, "Xsite"));
     ly = int(matchstring(inputfile_, "Ysite"));
-//    J_Hund_InfinityLimit_int = int (matchstring(inputfile_, "J_Hund_InfinityLimit"));
-//    if(J_Hund_InfinityLimit_int==1){
-//        J_Hund_InfinityLimit=true;
-//    }
-//    else{
-//        J_Hund_InfinityLimit=false;
-//    }
+    //    J_Hund_InfinityLimit_int = int (matchstring(inputfile_, "J_Hund_InfinityLimit"));
+    //    if(J_Hund_InfinityLimit_int==1){
+    //        J_Hund_InfinityLimit=true;
+    //    }
+    //    else{
+    //        J_Hund_InfinityLimit=false;
+    //    }
 
     TBC_mx = int(matchstring(inputfile_, "TwistedBoundaryCond_mx"));
     TBC_my = int(matchstring(inputfile_, "TwistedBoundaryCond_my"));
@@ -224,10 +224,10 @@ void Parameters::Initialize(string inputfile_)
 
     Ignore_Fermions_double = double(matchstring(inputfile_, "Ignore_Fermions"));
     if(Ignore_Fermions_double == 1.0){
-       Ignore_Fermions=true;
+        Ignore_Fermions=true;
     }
     else{
-       Ignore_Fermions=false;
+        Ignore_Fermions=false;
     }
 
     metropolis_double = double(matchstring(inputfile_, "Metropolis_Algo"));
@@ -282,7 +282,7 @@ void Parameters::Initialize(string inputfile_)
         no_of_temp_points = ((temp_max - temp_min)/(d_Temp)) + 1;
         Temp_values.resize(no_of_temp_points);
         for(int point=0;point<no_of_temp_points;point++){
-        Temp_values[point] = temp_max - (d_Temp*point);
+            Temp_values[point] = temp_max - (d_Temp*point);
         }
 
 
@@ -298,7 +298,7 @@ void Parameters::Initialize(string inputfile_)
         Temp_values.resize(no_of_temp_points);
 
         for(int point_no=0;point_no<no_of_temp_points;point_no++){
-        temp_values_stream >> Temp_values[point_no];
+            temp_values_stream >> Temp_values[point_no];
         }
 
     }
@@ -340,6 +340,14 @@ void Parameters::Initialize(string inputfile_)
         cout << "ERROR: Perform_ED can be only 1 (true) or 0 (false)" << endl;
         assert(ED_double == 0.0);
     }
+
+    if(BoundaryConnection==0.0){
+        if(!ED_){
+            cout<<"TCA with OBC is not implemented"<<endl;
+            assert(ED_);
+        }
+    }
+
 
     Read_Seed_from_file_double = double(matchstring(inputfile_, "Read_Seed_from_file"));
     if (Read_Seed_from_file_double == 1.0)

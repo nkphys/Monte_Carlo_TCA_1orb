@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     Observables Observables_(Parameters_,Coordinates_,MFParams_,Hamiltonian_);
 
 
-    Parameters_.Single_Diagonalization=true;
+    Parameters_.Single_Diagonalization=false;
 
 
     if(check_Non_Int==true){
