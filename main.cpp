@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
     string inputfile = argv[1];
 
     bool check_Non_Int=false;
+    bool Momentum_space_calculations=false;
 
 
 
@@ -72,6 +73,16 @@ int main(int argc, char *argv[]) {
         //Hamiltonian_.Ham_.print();
         //Observables_.Calculate_Akw();
         //Observables_.Calculate_Akw_at_w(mu);
+        Observables_.Calculate_Nw();
+
+
+    }
+    else if(Momentum_space_calculations==true){
+
+       //string Magnetic_state="Pi0_triangular_Lattice_Ising";
+       string Magnetic_state="ZZ_vertical_triangular_Lattice_Ising";
+
+        Hamiltonian_.K_space_Calculation(Magnetic_state);
         Observables_.Calculate_Nw();
 
 

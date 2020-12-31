@@ -242,12 +242,15 @@ void Observables::Calculate_Akw()
 void Observables::Calculate_Nw()
 {
 
+    int ind_max;
+    ind_max=Hamiltonian_.eigs_.size();
+
     //---------Read from input file-----------------------//
     string fileout = "Nw.txt";
     double omega_min, omega_max, d_omega;
-    double eta = 0.25;
-    omega_min = -100;
-    omega_max = 100.0;
+    double eta = 0.2;
+    omega_min = Hamiltonian_.eigs_[0]-10.0;
+    omega_max = Hamiltonian_.eigs_[ind_max-1] + 10.0;
     d_omega = 0.001;
     //---------------------------------------------------//
 
@@ -256,22 +259,37 @@ void Observables::Calculate_Nw()
     ofstream file_Nw_out(fileout.c_str());
 
     double temp_val;
-
+    double filling_counter;
+    filling_counter=0.0;
     for (int omega_ind = 0; omega_ind < omega_index_max; omega_ind++)
     {
 
         temp_val = 0.0;
 
-        for (int n = 0; n < Hamiltonian_.Ham_.n_row(); n++)
+        for (int n = 0; n < Hamiltonian_.eigs_.size(); n++)
         {
 
             temp_val += Lorentzian(omega_min + (omega_ind * d_omega) - Hamiltonian_.eigs_[n], eta);
         }
 
-        file_Nw_out << omega_min + (omega_ind * d_omega) << "     " << temp_val << "     " << endl;
+        filling_counter +=temp_val*(d_omega)*(1.0/Hamiltonian_.eigs_.size());
+
+        file_Nw_out << omega_min + (omega_ind * d_omega) << "     " << filling_counter<<"    "<<temp_val << "     " << endl;
     }
 
     file_Nw_out << "#mu = " << Parameters_.mus << endl;
+
+
+
+     string fileout_eigs = "Spectrum.txt";
+     ofstream file_eigs_out(fileout_eigs.c_str());
+     for (int n = 0; n < Hamiltonian_.eigs_.size(); n++)
+     {
+         file_eigs_out<<n<<"  "<<Hamiltonian_.eigs_[n]<<endl;
+     }
+
+
+
 }
 
 void Observables::Get_Non_Interacting_dispersion()

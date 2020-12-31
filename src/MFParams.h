@@ -234,7 +234,7 @@ void MFParams::initialize()
     bool Diagonal_ZigZag_Ising_alongZ=false;
     bool HalfZigZag_Ising_alongZ=false;
     bool Stripes_alongZ_doped0p75=false;
-    bool Stripes_alongZ_doped0p75_plus_small_randomization=true;
+    bool Stripes_alongZ_doped0p75_plus_small_randomization=false;
 
     if(Parameters_.Geometry=="Triangular"){
 
@@ -632,7 +632,7 @@ void MFParams::initialize()
                             Moment_Size(i, j) = random1();
                         }
                         else{
-                            Moment_Size(i,j)=1.0;
+                            Moment_Size(i,j)=0.122343;
                         }
 
                         //Moment_Size(i,j)=1.0 - (random1() - 0.5)*0.1;

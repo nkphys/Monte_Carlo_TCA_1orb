@@ -51,6 +51,11 @@ public:
 
     void clone(Hamiltonian &Hamiltonian_new);
 
+    void K_space_Calculation(string Magnetic_state);
+    int partition(vector<double> &a, int s, int e);
+    void quicksort(vector<double> &a, int s, int e);
+
+
     Parameters &Parameters_;
     Coordinates &Coordinates_;
     Coordinates &CoordinatesCluster_;
@@ -67,6 +72,246 @@ public:
     double HS_factor;
 };
 
+
+
+int Hamiltonian::partition(vector<double> &a, int s, int e)
+{
+    double piviot = a[e];
+    int pind = s;
+    int i;
+    double t;
+
+    for (i = s; i < e; i++) {
+        if (a[i] <= piviot) {
+            t = a[i];
+            a[i] = a[pind];
+            a[pind] = t;
+            pind++;
+        }
+    }
+
+    t = a[e];
+    a[e] = a[pind];
+    a[pind] = t;
+
+    return pind;
+}
+
+void Hamiltonian::quicksort(vector<double> &a, int s, int e)
+{
+    if (s < e) {
+        int pind = partition(a, s, e);
+        quicksort(a, s, pind - 1);
+        quicksort(a, pind + 1, e);
+    }
+}
+
+void Hamiltonian::K_space_Calculation(string Magnetic_state){
+
+
+
+    Matrix<complex<double>>  Ham_up, Ham_dn;
+    double U_=-0.5*Parameters_.J_Hund;
+    double K_;
+    K_=  2.0*(U_ + Parameters_.SIA);
+    double M_; //Moment
+    M_=Parameters_.Kspace_Moment_fixed;
+    double kx_, ky_;
+    vector<double> eigs_up, eigs_dn;
+    vector<double> eigs_all;
+
+
+    if(Magnetic_state=="Pi0_triangular_Lattice_Ising"){
+
+        string eigs_out_file = "Eigenvalues_"+Magnetic_state+".txt";
+        ofstream eigs_out_fl(eigs_out_file.c_str());
+        eigs_out_fl<<"#nx   ny    E_up[0]  E_up[1]  E_dn[0]  E_dn[1]"<<endl;
+
+        for(int nx=0;nx<Parameters_.lx;nx++){
+            kx_=(2.0*nx*PI)/(Parameters_.lx);
+            for(int ny=0;ny<Parameters_.ly;ny++){
+                ky_=(2.0*ny*PI)/(Parameters_.ly);
+
+                Ham_up.resize(2,2);
+                Ham_up(0,0)= -0.5*K_*M_  + 0.5*U_ + 2.0*Parameters_.t_hopping*cos(ky_);
+                Ham_up(1,1)= 0.5*K_*M_ + + 0.5*U_ + 2.0*Parameters_.t_hopping*cos(ky_);
+                Ham_up(0,1)= Parameters_.t_hopping*(one_complex + exp(iota_complex*kx_)
+                                                    +exp(-1.0*iota_complex*ky_)+exp(iota_complex*(kx_+ky_))
+                                                    );
+                Ham_up(1,0)=conj(Ham_up(0,1));
+
+                Ham_dn.resize(2,2);
+                Ham_dn(0,0)= 0.5*K_*M_ + 0.5*U_  +2.0*Parameters_.t_hopping*cos(ky_);
+                Ham_dn(1,1)= -0.5*K_*M_ + 0.5*U_  +2.0*Parameters_.t_hopping*cos(ky_);
+                Ham_dn(0,1)= Parameters_.t_hopping*(one_complex + exp(iota_complex*kx_)
+                                                    +exp(-1.0*iota_complex*ky_)+exp(iota_complex*(kx_+ky_))
+                                                    );
+                Ham_dn(1,0)=conj(Ham_dn(0,1));
+
+
+                Ham_=Ham_up;
+                Diagonalize('V');
+                eigs_up=eigs_;
+
+                Ham_=Ham_dn;
+                Diagonalize('V');
+                eigs_dn=eigs_;
+
+                eigs_out_fl<<nx<<"  "<<ny<<"  "<<eigs_up[0]<<"  "<<eigs_up[1]<<"  "<<eigs_dn[0]<<"  "<<eigs_dn[1]<<endl;
+
+
+                for(int n=0;n<eigs_up.size();n++){
+                    eigs_all.push_back(eigs_up[n]);
+                    eigs_all.push_back(eigs_dn[n]);
+                }
+
+
+            }
+            eigs_out_fl<<endl;
+        }
+        eigs_=eigs_all;
+        quicksort(eigs_, 0, eigs_.size()-1);
+
+
+        int n_states_occupied_zeroT = Parameters_.ns * Parameters_.Fill * 2.0;
+        double initial_mu_guess = 0.5 * (eigs_[n_states_occupied_zeroT - 1] + eigs_[n_states_occupied_zeroT]);
+        Parameters_.mus = chemicalpotential(initial_mu_guess, Parameters_.Fill);
+
+        double Energy_QM, Energy_Total;
+        Energy_QM=E_QM();
+
+        Energy_Total = Energy_QM + 2.0*Parameters_.lx*Parameters_.ly*(((U_+Parameters_.SIA)*M_*M_)  -  (U_*0.25));
+
+        cout<<setprecision(10);
+        cout<<"mu = "<<Parameters_.mus<<endl;
+        cout<<"Energy_Total = "<<Energy_Total<<endl;
+        cout<<"Energy_Classical = "<<2.0*Parameters_.lx*Parameters_.ly*(((U_+Parameters_.SIA)*M_*M_)  -  (U_*0.25))<<endl;
+    }
+
+    if(Magnetic_state=="ZZ_vertical_triangular_Lattice_Ising"){
+        string eigs_out_file = "Eigenvalues_"+Magnetic_state+".txt";
+        ofstream eigs_out_fl(eigs_out_file.c_str());
+        eigs_out_fl<<"#nx   ny    E_up[0]  E_up[1]  E_up[2]  E_up[3]  E_dn[0]  E_dn[1]  E_dn[2]  E_dn[3]"<<endl;
+
+        for(int nx=0;nx<Parameters_.lx;nx++){
+            kx_=(2.0*nx*PI)/(Parameters_.lx);
+            for(int ny=0;ny<Parameters_.ly;ny++){
+                ky_=(2.0*ny*PI)/(Parameters_.ly);
+
+                Ham_up.resize(8,8);
+                Ham_dn.resize(8,8);
+
+                Ham_up(0,0)= -0.5*K_*M_ + 0.5*U_;
+                Ham_up(1,1)= 0.5*K_*M_ + 0.5*U_ ;
+                Ham_up(2,2)= -0.5*K_*M_+ 0.5*U_;
+                Ham_up(3,3)= 0.5*K_*M_+ 0.5*U_;
+                Ham_up(4,4)= 0.5*K_*M_ + 0.5*U_;
+                Ham_up(5,5)= -0.5*K_*M_ + 0.5*U_ ;
+                Ham_up(6,6)= 0.5*K_*M_+ 0.5*U_;
+                Ham_up(7,7)= -0.5*K_*M_+ 0.5*U_;
+
+
+                /*
+                Ham_up(0,1)= Parameters_.t_hopping*(one_complex + exp(iota_complex*kx_));
+                Ham_up(0,2)= Parameters_.t_hopping*(one_complex + exp(iota_complex*ky_));
+                Ham_up(0,3)= Parameters_.t_hopping*(one_complex + exp(iota_complex*ky_));
+                Ham_up(1,2)= Parameters_.t_hopping*(exp(-1.0*iota_complex*kx_))*(one_complex + exp(iota_complex*ky_));
+                Ham_up(1,3)= Parameters_.t_hopping*(one_complex + exp(iota_complex*ky_));
+                Ham_up(2,3)= Parameters_.t_hopping*(one_complex + exp(iota_complex*kx_));
+                Ham_up(1,0)=conj(Ham_up(0,1));
+                Ham_up(2,0)=conj(Ham_up(0,2));
+                Ham_up(3,0)=conj(Ham_up(0,3));
+                Ham_up(2,1)=conj(Ham_up(1,2));
+                Ham_up(3,1)=conj(Ham_up(1,3));
+                Ham_up(3,2)=conj(Ham_up(2,3));
+                */
+
+                Ham_up(0,1)= Parameters_.t_hopping*(one_complex + exp(iota_complex*kx_));
+                Ham_up(0,2)= Parameters_.t_hopping*(one_complex);
+                Ham_up(0,3)= Parameters_.t_hopping*(one_complex);
+                Ham_up(0,6)= Parameters_.t_hopping*(exp(iota_complex*ky_));
+                Ham_up(0,7)= Parameters_.t_hopping*(exp(iota_complex*(ky_+kx_)));
+                Ham_up(1,2)= Parameters_.t_hopping*(exp(-1.0*iota_complex*(kx_)));
+                Ham_up(1,3)= Parameters_.t_hopping*(one_complex);
+                Ham_up(1,6)= Parameters_.t_hopping*(exp(iota_complex*ky_));
+                Ham_up(1,7)= Parameters_.t_hopping*(exp(iota_complex*ky_));
+                Ham_up(2,3)= Parameters_.t_hopping*(one_complex + exp(iota_complex*kx_));
+                Ham_up(2,4)= Parameters_.t_hopping*(one_complex);
+                Ham_up(2,5)= Parameters_.t_hopping*(one_complex);
+                Ham_up(3,4)= Parameters_.t_hopping*(exp(-1.0*iota_complex*kx_));
+                Ham_up(3,5)= Parameters_.t_hopping;
+                Ham_up(4,5)= Parameters_.t_hopping*(one_complex + exp(iota_complex*kx_));
+                Ham_up(4,6)= Parameters_.t_hopping;
+                Ham_up(4,7)= Parameters_.t_hopping;
+                Ham_up(5,6)= Parameters_.t_hopping*(exp(-1.0*iota_complex*kx_));
+                Ham_up(5,7)= Parameters_.t_hopping;
+                Ham_up(6,7)= Parameters_.t_hopping*(one_complex + exp(iota_complex*kx_));
+                for(int i=0;i<8;i++){
+                    for(int j=i+1;j<8;j++){
+                        Ham_up(j,i)=conj(Ham_up(i,j));
+                    }
+                }
+
+
+                Ham_dn=Ham_up;
+                Ham_dn(0,0)= 0.5*K_*M_ + 0.5*U_;
+                Ham_dn(1,1)= -0.5*K_*M_ + 0.5*U_ ;
+                Ham_dn(2,2)= 0.5*K_*M_+ 0.5*U_;
+                Ham_dn(3,3)= -0.5*K_*M_+ 0.5*U_;
+                Ham_dn(4,4)= -0.5*K_*M_ + 0.5*U_;
+                Ham_dn(5,5)= 0.5*K_*M_ + 0.5*U_ ;
+                Ham_dn(6,6)= -0.5*K_*M_+ 0.5*U_;
+                Ham_dn(7,7)= 0.5*K_*M_+ 0.5*U_;
+
+
+
+                Ham_=Ham_up;
+                Diagonalize('V');
+                eigs_up=eigs_;
+
+                Ham_=Ham_dn;
+                Diagonalize('V');
+                eigs_dn=eigs_;
+
+                eigs_out_fl<<nx<<"  "<<ny<<"  "<<eigs_up[0]<<"  "<<eigs_up[1]<<"  "<<eigs_up[2]<<"  "<<eigs_up[3]<<"  "
+                          <<eigs_up[4]<<"  "<<eigs_up[5]<<"  "<<eigs_up[6]<<"  "<<eigs_up[7]<<"  "
+                          <<eigs_dn[0]<<"  "<<eigs_dn[1]<<"   "<<eigs_dn[2]<<"  "<<eigs_dn[3]<<"  "
+                         <<eigs_dn[4]<<"  "<<eigs_dn[5]<<"   "<<eigs_dn[6]<<"  "<<eigs_dn[7]<<endl;
+
+
+                for(int n=0;n<eigs_up.size();n++){
+                    eigs_all.push_back(eigs_up[n]);
+                    eigs_all.push_back(eigs_dn[n]);
+                }
+
+
+            }
+            eigs_out_fl<<endl;
+        }
+        eigs_=eigs_all;
+        quicksort(eigs_, 0, eigs_.size()-1);
+
+        int n_states_occupied_zeroT = 8.0*Parameters_.ns * Parameters_.Fill * 2.0;
+        double initial_mu_guess = 0.5 * (eigs_[n_states_occupied_zeroT - 1] + eigs_[n_states_occupied_zeroT]);
+        Parameters_.mus = chemicalpotential(initial_mu_guess, Parameters_.Fill);
+
+        double Energy_QM, Energy_Total;
+        Energy_QM=E_QM();
+
+        Energy_Total = Energy_QM + 8.0*Parameters_.lx*Parameters_.ly*(((U_+Parameters_.SIA)*M_*M_)  -  (U_*0.25));
+
+        cout<<setprecision(10);
+        cout<<"mu = "<<Parameters_.mus<<endl;
+        cout<<"Energy_Total = "<<Energy_Total<<endl;
+        cout<<"Energy_Classical = "<<8.0*Parameters_.lx*Parameters_.ly*(((U_+Parameters_.SIA)*M_*M_)  -  (U_*0.25))<<endl;
+
+
+
+    }
+
+
+
+}
 
 void Hamiltonian::clone(Hamiltonian &Hamiltonian_new){
 
@@ -307,11 +552,11 @@ double Hamiltonian::chemicalpotentialCluster(double muin, double filling)
 void Hamiltonian::Initialize()
 {
 
-    //For Hubbard Stratonovich transformation i.e. MXMF use HS_factor=1.0;
-    HS_factor = 0.0;
+    //For Hubbard Stratonovich transformation i.e. MCMF use HS_factor=1.0;
+    //HS_factor = 1.0;
 
     //else use
-    //HS_factor=0.0;
+    HS_factor=0.0;
 
     int ns = (Parameters_.lx_cluster) * (Parameters_.ly_cluster);
 
@@ -475,12 +720,12 @@ void Hamiltonian::InteractionsCreate()
 {
 
     /*
-    For Effective Hamiltonian derived from
-    Hubbard-Stratonovich transformation, remember:
-    JH= -2*U
-    HS_factor=1.0;
-    K=0;
-     */
+            For Effective Hamiltonian derived from
+            Hubbard-Stratonovich transformation, remember:
+            JH= -2*U
+            HS_factor=1.0;
+            K=0;
+             */
 
     enum {PX=0,MX,PY,MY};
 

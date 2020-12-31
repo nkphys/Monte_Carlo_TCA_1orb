@@ -14,6 +14,7 @@ public:
     double J_Hund, K1x, K1y, K2x, K2y, K1_prime, K2_prime;
     double SIA; //Single Ion Anisotropy
     double lambda_lattice;
+    double Kspace_Moment_fixed;
     double k_const;
     double Disorder_Strength, RandomDisorderSeed;
     double Boltzman_constant;
@@ -203,6 +204,7 @@ void Parameters::Initialize(string inputfile_)
     Disorder_Strength = matchstring(inputfile_, "Disorder_Strength");
     Boltzman_constant = matchstring(inputfile_, "Boltzman_constant");
     J_Hund = matchstring(inputfile_, "J_Hund");
+    Kspace_Moment_fixed=matchstring(inputfile_, "Kspace_Moment_fixed");
     SIA = matchstring(inputfile_,"SingleIonAnisotropy");
     lambda_lattice = matchstring (inputfile_, "lambda_lattice");
     K1x = matchstring(inputfile_, "K1x");
