@@ -23,7 +23,7 @@ public:
         Initialize();
         Hoppings();
         HTBCreate();
-        HTBClusterCreate();
+        //HTBClusterCreate();
     }
 
     void Initialize();                                     //::DONE
@@ -34,7 +34,7 @@ public:
     void Check_Hermiticity();                              //::DONE
     void Check_up_down_symmetry();                         //::DONE
     void HTBCreate();                                      //::DONE
-    void HTBClusterCreate();                               //::DONE
+    void HTBClusterCreate(int Center_site);                               //::DONE
     double chemicalpotential(double muin, double filling); //::DONE
 
     double chemicalpotentialCluster(double muin, double filling); //::DONE
@@ -824,6 +824,7 @@ void Hamiltonian::InteractionsClusterCreate(int Center_site)
         HamCluster_ = Ham_;
     }
     else{
+        HTBClusterCreate(Center_site);
         HamCluster_ = HTBCluster_;
 
         for (int i = 0; i < ns; i++)
@@ -1101,9 +1102,9 @@ void Hamiltonian::HTBCreate()
 
 } // ----------
 
-void Hamiltonian::HTBClusterCreate()
+void Hamiltonian::HTBClusterCreate(int Center_site)
 {
-
+    int x_pos, y_pos;
     if(Parameters_.ED_==false){
         int ns = (Parameters_.lx_cluster) * (Parameters_.ly_cluster);
 
@@ -1114,11 +1115,16 @@ void Hamiltonian::HTBClusterCreate()
 
         for (l = 0; l < ns; l++)
         {
+            x_pos = Coordinates_.indx(Center_site) - int(Parameters_.lx_cluster / 2) + CoordinatesCluster_.indx(l);
+            y_pos = Coordinates_.indy(Center_site) - int(Parameters_.ly_cluster / 2) + CoordinatesCluster_.indy(l);
+            x_pos = (x_pos + Coordinates_.lx_) % Coordinates_.lx_;
+            y_pos = (y_pos + Coordinates_.ly_) % Coordinates_.ly_;
+
 
             // * +x direction Neighbor
-            if (CoordinatesCluster_.indx(l) == (CoordinatesCluster_.lx_ - 1))
+            if (x_pos == (Coordinates_.lx_ - 1)) // At the boundary of Full system
             {
-                phasex = one_complex;
+                phasex = Parameters_.BoundaryConnection*one_complex;
                 phasey = one_complex;
             }
             else
@@ -1142,7 +1148,7 @@ void Hamiltonian::HTBClusterCreate()
             }
 
             // * +y direction Neighbor
-            if (CoordinatesCluster_.indy(l) == (CoordinatesCluster_.ly_ - 1))
+            if (y_pos == (Coordinates_.ly_ - 1))
             {
                 phasex = one_complex;
                 phasey = one_complex;
@@ -1171,7 +1177,26 @@ void Hamiltonian::HTBClusterCreate()
             if(Parameters_.Geometry=="Triangular"){
 
                 // * +x+y direction Neighbor
+                if (y_pos == (Coordinates_.ly_ - 1))
+                {
+                    phasey = Parameters_.BoundaryConnection*one_complex;
+                }
+                else
+                {
+                    phasey = one_complex;
+                }
+                if (x_pos == (Coordinates_.lx_ - 1))
+                {
+                    phasex = Parameters_.BoundaryConnection*one_complex;
+                }
+                else
+                {
+                    phasex = one_complex;
+                }
+
                 m = CoordinatesCluster_.neigh(l, 4);
+
+
                 for (int spin = 0; spin < 2; spin++)
                 {
                     a = l + ns * spin;
@@ -1179,7 +1204,7 @@ void Hamiltonian::HTBClusterCreate()
                     assert(a != b);
                     if (a != b)
                     {
-                        HTBCluster_(a, b) = complex<double>(1.0 * Parameters_.t_hopping, 0.0);
+                        HTBCluster_(a, b) = complex<double>(1.0 * Parameters_.t_hopping, 0.0)*phasex*phasey;
                         HTBCluster_(b, a) = conj(HTBCluster_(a, b));
                     }
                 }

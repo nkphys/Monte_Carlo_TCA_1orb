@@ -345,8 +345,9 @@ void Parameters::Initialize(string inputfile_)
 
     if(BoundaryConnection==0.0){
         if(!ED_){
-            cout<<"TCA with OBC is not implemented"<<endl;
-            assert(ED_);
+            //            cout<<"TCA with OBC is not implemented"<<endl;
+            //            assert(ED_);
+            cout<<"TCA is used while respecting OBC of Full System"<<endl;
         }
     }
 
